@@ -113,11 +113,15 @@
               <span id="liveSubmitPill" class="bg-rose-100 text-rose-700 text-[11px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
                 <i class="fa-solid fa-circle text-[7px] text-rose-500"></i> 제출 <span id="headerStudentCount">0</span>명 (<span id="headerRawCount">0</span>개)
               </span>
+
+              <span id="studentRoleIndicator" class="student-only hidden text-xs font-bold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+                권한: <b id="studentRoleIndicatorText" class="text-indigo-600">작성자</b>
+              </span>
             </div>
             <div class="flex items-center gap-1.5 text-xs text-slate-500">
               <span class="font-medium text-slate-700">주제:</span>
               <span id="displayTopic" class="font-bold text-indigo-600 underline cursor-pointer hover:text-indigo-800" onclick="openTopicModal()" title="주제 수정">오늘의 수업 주제를 입력하세요</span>
-              <button onclick="openTopicModal()" class="text-slate-400 hover:text-indigo-600 p-0.5"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="openTopicModal()" class="text-slate-400 hover:text-indigo-600 p-0.5 teacher-only"><i class="fa-solid fa-pen text-[10px]"></i></button>
               <span class="text-slate-300 teacher-only">|</span>
               <span id="activeProjectBadge" onclick="openProjectModal()" class="teacher-only cursor-pointer bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center gap-1 transition" title="프로젝트 보관함">
                 <i class="fa-solid fa-folder text-amber-500"></i> <span id="activeProjectName">기본 프로젝트</span>
@@ -136,16 +140,16 @@
             <i class="fa-solid fa-qrcode text-amber-300"></i> <span>학생 QR 참여</span>
           </button>
 
-          <button id="revealToggleBtn" onclick="toggleResultReveal()" class="teacher-only bg-slate-800 hover:bg-slate-900 active:scale-95 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-            <i id="revealIcon" class="fa-solid fa-eye-slash"></i> 
-            <span id="revealText">결과 숨김</span>
+          <button id="revealToggleBtn" onclick="toggleResultReveal()" class="teacher-only bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5">
+            <i id="revealIcon" class="fa-solid fa-eye"></i> 
+            <span id="revealText">결과 공개</span>
           </button>
 
           <button id="teacherAuthBtn" onclick="toggleTeacherLock()" class="teacher-only bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5" title="교사 잠금 / 해제">
             <i id="teacherAuthIcon" class="fa-solid fa-lock-open"></i> <span id="teacherAuthText" class="hidden sm:inline">교사 인증됨</span>
           </button>
 
-          <button onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5">
+          <button id="btnOpenSubmitModal" onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5">
             <i class="fa-solid fa-paper-plane"></i> <span>생각 쓰기</span>
           </button>
 
@@ -196,9 +200,9 @@
     </header>
 
     <!-- FLOATING SMART WHITEBOARD TOOLBAR -->
-    <div class="max-w-7xl mx-auto w-full px-3 pt-2 pb-1 flex flex-wrap items-center justify-between gap-2 z-30">
+    <div id="whiteboardToolbarRow" class="max-w-7xl mx-auto w-full px-3 pt-2 pb-1 flex flex-wrap items-center justify-between gap-2 z-30">
       
-      <div class="bg-white/95 backdrop-blur px-2.5 py-1.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-1.5 text-xs">
+      <div id="drawingToolControls" class="bg-white/95 backdrop-blur px-2.5 py-1.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-1.5 text-xs">
         
         <div class="inline-flex bg-slate-100 p-0.5 rounded-xl border border-slate-200">
           <button id="toolBtnSelect" onclick="setBoardTool('select')" class="px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1" title="낱말 및 그룹 이동">
@@ -237,7 +241,7 @@
           <button id="btnAddNewGroup" onclick="openNewGroupModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-xl shadow-xs transition flex items-center gap-1">
             <i class="fa-solid fa-plus"></i> 새 그룹
           </button>
-          <button onclick="autoCategorizeSmart()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-xl transition flex items-center gap-1" title="비슷한 단어를 그룹으로 자동 추천 배치">
+          <button id="btnAutoCategorize" onclick="autoCategorizeSmart()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-xl transition flex items-center gap-1" title="비슷한 단어를 그룹으로 자동 추천 배치">
             <i class="fa-solid fa-brain"></i> 자동 추천 분류
           </button>
         </div>
@@ -245,11 +249,11 @@
       </div>
 
       <div class="flex items-center gap-2 text-xs">
-        <div id="teacherRoleBar" class="hidden sm:flex items-center gap-1 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-xs font-bold text-slate-600">
+        <div id="teacherRoleBar" class="teacher-only flex items-center gap-1 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-xs font-bold text-slate-600">
           <span>학생 권한:</span>
-          <button onclick="handleRoleClick('viewer')" id="roleBtnViewer" class="px-2 py-0.5 rounded text-[11px] hover:text-slate-900">뷰어</button>
-          <button onclick="handleRoleClick('contributor')" id="roleBtnContributor" class="px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700">작성자</button>
-          <button onclick="handleRoleClick('editor')" id="roleBtnEditor" class="px-2 py-0.5 rounded text-[11px] hover:text-slate-900">편집자</button>
+          <button onclick="handleRoleClick('viewer')" id="roleBtnViewer" class="px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900">뷰어</button>
+          <button onclick="handleRoleClick('contributor')" id="roleBtnContributor" class="px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700 font-bold">작성자</button>
+          <button onclick="handleRoleClick('editor')" id="roleBtnEditor" class="px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900">편집자</button>
         </div>
 
         <button onclick="changeCloudTheme()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold px-2.5 py-1 rounded-xl border border-slate-200 shadow-xs flex items-center gap-1">
@@ -264,6 +268,23 @@
       
       <div id="boardContainer" class="flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
         
+        <!-- [추가] 보드 상단 중앙 대형 수업 주제 타이틀 배너 -->
+        <div id="boardHeaderTitleBanner" class="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[85%] sm:max-w-[70%] text-center">
+          <div onclick="openTopicModal()" 
+               class="cursor-pointer group inline-flex items-center gap-2 bg-white/95 hover:bg-white text-slate-800 px-5 py-2 rounded-2xl border-2 border-indigo-200 hover:border-indigo-400 shadow-md backdrop-blur-md transition-all active:scale-95" 
+               title="클릭하여 수업 주제를 바로 수정하세요">
+            <span class="w-6 h-6 rounded-lg bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-black transition">
+              <i class="fa-solid fa-quote-left"></i>
+            </span>
+            <h2 id="boardCenterTopicText" class="text-base sm:text-xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition truncate max-w-md sm:max-w-xl">
+              오늘의 수업 주제를 입력하세요
+            </h2>
+            <span class="text-slate-400 group-hover:text-indigo-600 text-xs ml-0.5 transition">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </span>
+          </div>
+        </div>
+
         <canvas id="drawingCanvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
         <div id="drawingEventTrap" class="hidden absolute inset-0 z-20 cursor-crosshair"></div>
         <div id="arrowActionsContainer" class="absolute inset-0 z-25 pointer-events-none"></div>
@@ -277,7 +298,7 @@
             <h3 class="text-lg font-black text-slate-900 mb-1">선생님이 생각을 모으고 계십니다!</h3>
             <p class="text-xs text-slate-500 mb-5">현재 <b id="overlaySubmitStats" class="text-indigo-600 font-black">0명(0개 낱말)</b>이 참여했습니다.<br>선생님이 결과를 공개하면 칠판에 나타납니다.</p>
             <div class="flex flex-col gap-2">
-              <button onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
+              <button id="overlaySubmitBtn" onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-paper-plane"></i> <span>내 생각 보내기</span>
               </button>
               <button id="overlayTeacherRevealBtn" onclick="toggleResultReveal()" class="teacher-only bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-md transition">
@@ -290,13 +311,13 @@
         <!-- Freeform Interactive DOM Canvas -->
         <div id="unifiedBoardCanvas" class="flex-1 relative w-full h-full overflow-hidden p-4 min-h-[460px]">
           
-          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400">
+          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400 mt-12">
             <div class="w-14 h-14 rounded-full bg-slate-200/80 flex items-center justify-center text-2xl text-slate-400 mb-2">
               <i class="fa-regular fa-lightbulb"></i>
             </div>
             <p class="text-sm font-bold text-slate-600">아직 등록된 생각이 없어요!</p>
             <p class="text-xs text-slate-400 mt-0.5">상단의 [생각 쓰기]를 누르거나 학생 QR코드를 공유해 생각을 모아보세요.</p>
-            <button onclick="loadSampleData('bio')" class="mt-3 pointer-events-auto bg-white hover:bg-indigo-50 text-indigo-600 text-xs font-bold px-4 py-2 rounded-xl border border-indigo-200 shadow-xs transition">
+            <button onclick="loadSampleData('bio')" class="mt-3 pointer-events-auto bg-white hover:bg-indigo-50 text-indigo-600 text-xs font-bold px-4 py-2 rounded-xl border border-indigo-200 shadow-xs transition teacher-only">
               <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> (테스트용) 예시 낱말 불러오기
             </button>
           </div>
@@ -740,16 +761,25 @@
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data && data._lastUpdater !== currentUser.uid) {
-              if (data.topic) appState.topic = data.topic;
+              if (data.topic) {
+                appState.topic = data.topic;
+                syncTopicToUI(data.topic);
+              }
               if (data.groups) appState.groups = data.groups;
               if (data.wordPositions) appState.wordPositions = data.wordPositions;
               if (data.drawings) appState.drawings = data.drawings;
               if (data.submissions) appState.submissions = data.submissions;
-              if (data.isRevealed !== undefined) appState.isRevealed = data.isRevealed;
-              if (data.studentRole) appState.studentRole = data.studentRole;
+              if (data.isRevealed !== undefined) {
+                appState.isRevealed = data.isRevealed;
+                updateRevealBtnUI();
+              }
+              if (data.studentRole) {
+                appState.studentRole = data.studentRole;
+                updateTeacherRoleBarUI(data.studentRole);
+                applyStudentModeUI();
+              }
               if (data.theme) appState.theme = data.theme;
 
-              document.getElementById('displayTopic').innerText = appState.topic;
               renderUnifiedBoard();
             }
           }
@@ -796,24 +826,25 @@
       roomCode: '',
       topic: "오늘의 수업 주제를 입력하세요",
       theme: 'default',
-      isRevealed: true,
+      isRevealed: false,
       studentRole: 'contributor',
       isTeacherAuthenticated: true,
       teacherPin: "1234",
       isStudentView: false,
-      submissions: [], // [{ id, author, rawText, timestamp }]
+      submissions: [],
       wordPositions: {},
       groups: [
-        { id: 'grp_1', title: '1모둠 (또는 그룹 1)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 30, width: 280, height: 260 },
-        { id: 'grp_2', title: '2모둠 (또는 그룹 2)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 30, width: 280, height: 260 }
+        // 상단 타이틀 배너와 겹치지 않도록 기본 y 좌표를 70px로 정돈
+        { id: 'grp_1', title: '1모둠 (또는 그룹 1)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 280, height: 260 },
+        { id: 'grp_2', title: '2모둠 (또는 그룹 2)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 70, width: 280, height: 260 }
       ],
-      drawings: [], // [{ id, type, color, size, points, from, to, fromNodeId, toNodeId }]
+      drawings: [],
       autoMergeEnabled: true,
       customMerges: {}
     };
 
     let selectedDetailWord = null;
-    const STORAGE_KEY = 'edu_wordboard_projects_v3';
+    const STORAGE_KEY = 'edu_wordboard_projects_v5';
     let projectsDatabase = {};
     let promptCallback = null;
     let pendingDeleteProjectId = null;
@@ -829,6 +860,14 @@
 
     function generateRoomCode() {
       return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    // 수업 주제를 상단 헤더와 보드 중앙 대형 배너에 동시 반영하는 함수
+    function syncTopicToUI(topicStr) {
+      const hTopic = document.getElementById('displayTopic');
+      const bTopic = document.getElementById('boardCenterTopicText');
+      if (hTopic) hTopic.innerText = topicStr;
+      if (bTopic) bTopic.innerText = topicStr;
     }
 
     let audioCtx = null;
@@ -937,6 +976,24 @@
       });
     }
 
+    function broadcastState(patchObj) {
+      const payload = {
+        type: 'STATE_UPDATE',
+        roomCode: appState.roomCode,
+        state: patchObj
+      };
+      if (broadcastChannel) {
+        try { broadcastChannel.postMessage(payload); } catch(e){}
+      }
+      try {
+        localStorage.setItem('edu_wb_sync_evt_' + appState.roomCode, JSON.stringify({ ...payload, _t: Date.now() }));
+      } catch(e){}
+
+      if (typeof syncStateToCloudFirestore === 'function') {
+        syncStateToCloudFirestore();
+      }
+    }
+
     function broadcastSubmission(submissionObj) {
       const payload = {
         type: 'NEW_SUBMISSION',
@@ -970,14 +1027,23 @@
         autoSaveActiveProject();
         renderUnifiedBoard();
         playPopSound(600);
-        launchConfetti({ particleCount: 35, origin: { y: 0.6 } });
-        showToast(`생각 갱신: [${data.submission.author}] ${data.submission.rawText}`);
+        showToast(`생각 도착: [${data.submission.author}] ${data.submission.rawText}`);
       } else if (data.type === 'STATE_UPDATE' && data.state) {
-        if (data.state.isRevealed !== undefined) appState.isRevealed = data.state.isRevealed;
-        if (data.state.topic) appState.topic = data.state.topic;
+        if (data.state.isRevealed !== undefined) {
+          appState.isRevealed = data.state.isRevealed;
+          updateRevealBtnUI();
+        }
+        if (data.state.studentRole) {
+          appState.studentRole = data.state.studentRole;
+          updateTeacherRoleBarUI(data.state.studentRole);
+          applyStudentModeUI();
+        }
+        if (data.state.topic) {
+          appState.topic = data.state.topic;
+          syncTopicToUI(data.state.topic);
+        }
         if (data.state.groups) appState.groups = data.state.groups;
         if (data.state.wordPositions) appState.wordPositions = data.state.wordPositions;
-        if (data.state.studentRole) appState.studentRole = data.state.studentRole;
         renderUnifiedBoard();
       }
     }
@@ -1099,10 +1165,7 @@
       if (!boardContainer) return null;
       const containerRect = boardContainer.getBoundingClientRect();
 
-      let targetEl = document.querySelector(`[data-node-id="${nodeId}"]`);
-      if (!targetEl) {
-        targetEl = document.getElementById(nodeId);
-      }
+      let targetEl = document.querySelector(`[data-node-id="${nodeId}"]`) || document.getElementById(nodeId);
       if (!targetEl) return null;
 
       const rect = targetEl.getBoundingClientRect();
@@ -1134,33 +1197,21 @@
       if (dx > 0) {
         const t = (right - center.x) / dx;
         const y = center.y + t * dy;
-        if (t >= 0 && y >= top && y <= bottom && t < minT) {
-          minT = t;
-          hit = { x: right, y: y };
-        }
+        if (t >= 0 && y >= top && y <= bottom && t < minT) { minT = t; hit = { x: right, y: y }; }
       } else if (dx < 0) {
         const t = (left - center.x) / dx;
         const y = center.y + t * dy;
-        if (t >= 0 && y >= top && y <= bottom && t < minT) {
-          minT = t;
-          hit = { x: left, y: y };
-        }
+        if (t >= 0 && y >= top && y <= bottom && t < minT) { minT = t; hit = { x: left, y: y }; }
       }
 
       if (dy > 0) {
         const t = (bottom - center.y) / dy;
         const x = center.x + t * dx;
-        if (t >= 0 && x >= left && x <= right && t < minT) {
-          minT = t;
-          hit = { x: x, y: bottom };
-        }
+        if (t >= 0 && x >= left && x <= right && t < minT) { minT = t; hit = { x: x, y: bottom }; }
       } else if (dy < 0) {
         const t = (top - center.y) / dy;
         const x = center.x + t * dx;
-        if (t >= 0 && x >= left && x <= right && t < minT) {
-          minT = t;
-          hit = { x: x, y: top };
-        }
+        if (t >= 0 && x >= left && x <= right && t < minT) { minT = t; hit = { x: x, y: top }; }
       }
 
       return minT !== Infinity ? hit : { x: center.x, y: center.y };
@@ -1184,12 +1235,8 @@
       let startPt = fromCenter;
       let endPt = toCenter;
 
-      if (fromBox) {
-        startPt = getBoxIntersection(fromCenter, toCenter, fromBox, 4);
-      }
-      if (toBox) {
-        endPt = getBoxIntersection(toCenter, fromCenter, toBox, 4);
-      }
+      if (fromBox) startPt = getBoxIntersection(fromCenter, toCenter, fromBox, 4);
+      if (toBox) endPt = getBoxIntersection(toCenter, fromCenter, toBox, 4);
 
       return { startPt, endPt };
     }
@@ -1213,9 +1260,10 @@
 
       if (!appState.isRevealed) {
         if (hiddenOverlay) hiddenOverlay.classList.remove('hidden');
-        return;
+        if (appState.isStudentView) return;
+      } else {
+        if (hiddenOverlay) hiddenOverlay.classList.add('hidden');
       }
-      if (hiddenOverlay) hiddenOverlay.classList.add('hidden');
 
       if (words.length === 0) {
         if (emptyMsg) emptyMsg.classList.remove('hidden');
@@ -1229,7 +1277,8 @@
       const maxCount = Math.max(...words.map(w => w.totalCount), 1);
       const minCount = Math.min(...words.map(w => w.totalCount), 1);
       const palette = PALETTES[appState.theme] || PALETTES.default;
-      const canEdit = appState.studentRole === 'editor' || !appState.isStudentView;
+      
+      const canDragAndEdit = !appState.isStudentView || appState.studentRole === 'editor';
       const isTeacher = appState.isTeacherAuthenticated && !appState.isStudentView;
 
       const boardW = canvasEl.clientWidth || 900;
@@ -1239,7 +1288,7 @@
 
       appState.groups.forEach((grp, idx) => {
         if (grp.x === undefined) grp.x = 30 + (idx % 3) * 300;
-        if (grp.y === undefined) grp.y = 30 + Math.floor(idx / 3) * 280;
+        if (grp.y === undefined) grp.y = 70 + Math.floor(idx / 3) * 280;
 
         const groupDiv = document.createElement('div');
         groupDiv.id = `group_zone_${grp.id}`;
@@ -1251,15 +1300,15 @@
         groupDiv.style.minHeight = `${grp.height || 260}px`;
 
         groupDiv.innerHTML = `
-          <div class="group-drag-handle flex items-center justify-between pb-2 border-b border-black/10 mb-2 cursor-grab active:cursor-grabbing select-none">
+          <div class="group-drag-handle flex items-center justify-between pb-2 border-b border-black/10 mb-2 ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none">
             <div class="flex items-center gap-1.5 flex-1 pr-1">
               <span class="text-slate-400 hover:text-indigo-600 text-xs"><i class="fa-solid fa-grip-vertical"></i></span>
               <input type="text" value="${grp.title}" onchange="updateGroupTitle('${grp.id}', this.value)" 
                      class="bg-transparent font-black text-xs sm:text-sm text-slate-800 border-b border-dashed border-transparent hover:border-slate-400 focus:border-indigo-600 focus:bg-white px-1 outline-none w-full"
-                     ${canEdit ? '' : 'readonly'}>
+                     ${canDragAndEdit ? '' : 'readonly'}>
             </div>
             <span class="group-count-badge text-[11px] font-black bg-white/80 px-2 py-0.5 rounded-full mr-1 shadow-xs">0</span>
-            ${canEdit ? `
+            ${canDragAndEdit ? `
               <button onclick="removeGroup('${grp.id}')" class="text-slate-400 hover:text-rose-600 p-1 text-xs" title="그룹 삭제">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
@@ -1270,7 +1319,7 @@
           </div>
         `;
 
-        setupDraggableGroup(groupDiv, grp);
+        if (canDragAndEdit) setupDraggableGroup(groupDiv, grp);
         canvasEl.appendChild(groupDiv);
         groupContainers[grp.id] = groupDiv.querySelector(`#group_items_${grp.id}`);
       });
@@ -1293,7 +1342,7 @@
           const row = Math.floor(index / 5);
           appState.wordPositions[item.representative] = {
             x: Math.min(40 + (col * 180), boardW - 140),
-            y: Math.min(320 + (row * 65), boardH - 70),
+            y: Math.min(350 + (row * 65), boardH - 70),
             inGroup: null
           };
         }
@@ -1313,7 +1362,7 @@
           const nestedChip = document.createElement('div');
           nestedChip.id = `word_badge_${encodeURIComponent(item.representative)}`;
           nestedChip.dataset.nodeId = `word_${item.representative}`;
-          nestedChip.className = `canvas-item-node interactive-element inline-flex items-center gap-1 rounded-xl border font-bold shadow-xs cursor-grab active:cursor-grabbing select-none bg-white text-slate-800 hover:border-indigo-400 ${nestedPadding}`;
+          nestedChip.className = `canvas-item-node interactive-element inline-flex items-center gap-1 rounded-xl border font-bold shadow-xs ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none bg-white text-slate-800 hover:border-indigo-400 ${nestedPadding}`;
           nestedChip.style.fontSize = `${nestedFontRem}rem`;
 
           nestedChip.innerHTML = `
@@ -1326,7 +1375,7 @@
             ` : ''}
           `;
 
-          setupDraggableWord(nestedChip, item.representative, true);
+          if (canDragAndEdit) setupDraggableWord(nestedChip, item.representative, true);
           nestedChip.addEventListener('click', () => {
             if (!nestedChip.dataset.dragged) openWordDetailModal(item);
           });
@@ -1339,7 +1388,7 @@
           const wordBadge = document.createElement('div');
           wordBadge.id = `word_badge_${encodeURIComponent(item.representative)}`;
           wordBadge.dataset.nodeId = `word_${item.representative}`;
-          wordBadge.className = `canvas-item-node interactive-element absolute inline-flex items-center gap-2 rounded-2xl border-2 font-black shadow-md cursor-grab active:cursor-grabbing select-none z-20 ${colorClass} ${paddingClass}`;
+          wordBadge.className = `canvas-item-node interactive-element absolute inline-flex items-center gap-2 rounded-2xl border-2 font-black shadow-md ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none z-20 ${colorClass} ${paddingClass}`;
           wordBadge.style.fontSize = `${fontSizeRem}rem`;
           wordBadge.style.left = `${pos.x}px`;
           wordBadge.style.top = `${pos.y}px`;
@@ -1359,7 +1408,7 @@
             ` : ''}
           `;
 
-          setupDraggableWord(wordBadge, item.representative, false);
+          if (canDragAndEdit) setupDraggableWord(wordBadge, item.representative, false);
           wordBadge.addEventListener('click', () => {
             if (!wordBadge.dataset.dragged) openWordDetailModal(item);
           });
@@ -1431,7 +1480,6 @@
           appState.wordPositions[wordKey].x = newX;
           appState.wordPositions[wordKey].y = newY;
 
-          // 실시간 연결 화살표 이동 반영
           redrawAllDrawings();
         }
       };
@@ -1505,7 +1553,6 @@
           groupObj.x = newX;
           groupObj.y = newY;
 
-          // 그룹 이동 시 화살표 실시간 추적 갱신
           redrawAllDrawings();
         }
       };
@@ -1578,7 +1625,6 @@
       if (currentTool === 'select') setBoardTool('pen');
     }
 
-    // 마우스 위치의 낱말 카드 및 그룹 노드 감지
     function findNodeAtClientPoint(clientX, clientY) {
       const trap = document.getElementById('drawingEventTrap');
       if (trap) trap.style.pointerEvents = 'none';
@@ -1933,7 +1979,7 @@
         title: title,
         color: color,
         x: 40 + offset,
-        y: 40 + offset,
+        y: 70 + offset,
         width: 280,
         height: 260
       });
@@ -2009,7 +2055,6 @@
       document.getElementById('studentModal').classList.add('hidden');
     }
 
-    // 학생 제출 처리 (숫자 번호만 허용 및 기존 동일 번호 덮어쓰기)
     function submitModalWords() {
       const rawNum = document.getElementById('modalStudentNumber').value.trim();
       const words = document.getElementById('modalStudentWords').value.trim();
@@ -2032,7 +2077,6 @@
         timestamp: new Date().toISOString()
       };
 
-      // 기존 학생 번호 검색 및 덮어쓰기 (없으면 새로 추가)
       const existingIdx = appState.submissions.findIndex(s => s.author === formattedAuthor);
       let isUpdate = false;
       if (existingIdx !== -1) {
@@ -2132,66 +2176,62 @@
     function handleRoleClick(role) {
       requireTeacherAuth(() => {
         appState.studentRole = role;
-        const bViewer = document.getElementById('roleBtnViewer');
-        const bCont = document.getElementById('roleBtnContributor');
-        const bEdit = document.getElementById('roleBtnEditor');
-
-        [bViewer, bCont, bEdit].forEach(b => {
-          b.className = "px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900";
-        });
-
-        if (role === 'viewer') bViewer.className = "px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-900 font-bold";
-        else if (role === 'contributor') bCont.className = "px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700 font-bold";
-        else bEdit.className = "px-2 py-0.5 rounded text-[11px] bg-purple-50 text-purple-700 font-bold";
-
-        renderUnifiedBoard();
+        updateTeacherRoleBarUI(role);
+        broadcastState({ studentRole: role });
         autoSaveActiveProject();
         showToast(`학생 권한이 [${role === 'viewer' ? '뷰어' : role === 'contributor' ? '작성자' : '편집자'}]로 변경되었습니다.`);
       });
     }
 
+    function updateTeacherRoleBarUI(role) {
+      const bViewer = document.getElementById('roleBtnViewer');
+      const bCont = document.getElementById('roleBtnContributor');
+      const bEdit = document.getElementById('roleBtnEditor');
+      if (!bViewer || !bCont || !bEdit) return;
+
+      [bViewer, bCont, bEdit].forEach(b => {
+        b.className = "px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900";
+      });
+
+      if (role === 'viewer') bViewer.className = "px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-900 font-bold";
+      else if (role === 'contributor') bCont.className = "px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700 font-bold";
+      else bEdit.className = "px-2 py-0.5 rounded text-[11px] bg-purple-50 text-purple-700 font-bold";
+    }
+
     function toggleResultReveal() {
       requireTeacherAuth(() => {
         appState.isRevealed = !appState.isRevealed;
-        const btn = document.getElementById('revealToggleBtn');
-        const icon = document.getElementById('revealIcon');
-        const text = document.getElementById('revealText');
+        updateRevealBtnUI();
 
         if (appState.isRevealed) {
-          btn.className = "teacher-only bg-slate-800 hover:bg-slate-900 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5";
-          icon.className = "fa-solid fa-eye-slash";
-          text.innerText = "결과 숨김";
           launchConfetti({ particleCount: 60, origin: { y: 0.5 } });
           playPopSound(750);
           showToast("🎉 친구들의 생각이 화면에 공개되었습니다!");
         } else {
-          btn.className = "teacher-only bg-rose-600 hover:bg-rose-700 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5 animate-pulse";
-          icon.className = "fa-solid fa-eye";
-          text.innerText = "결과 공개";
           showToast("🔒 화면이 비공개(대기 화면)로 전환되었습니다.");
         }
 
-        const payload = {
-          type: 'STATE_UPDATE',
-          roomCode: appState.roomCode,
-          state: {
-            isRevealed: appState.isRevealed,
-            topic: appState.topic,
-            groups: appState.groups,
-            wordPositions: appState.wordPositions,
-            studentRole: appState.studentRole
-          }
-        };
-        if (broadcastChannel) {
-          try { broadcastChannel.postMessage(payload); } catch(e){}
-        }
-        try {
-          localStorage.setItem('edu_wb_sync_evt_' + appState.roomCode, JSON.stringify({ ...payload, _t: Date.now() }));
-        } catch(e){}
-
+        broadcastState({ isRevealed: appState.isRevealed });
         renderUnifiedBoard();
         autoSaveActiveProject();
       });
+    }
+
+    function updateRevealBtnUI() {
+      const btn = document.getElementById('revealToggleBtn');
+      const icon = document.getElementById('revealIcon');
+      const text = document.getElementById('revealText');
+      if (!btn) return;
+
+      if (appState.isRevealed) {
+        btn.className = "teacher-only bg-slate-800 hover:bg-slate-900 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5";
+        icon.className = "fa-solid fa-eye-slash";
+        text.innerText = "결과 숨김";
+      } else {
+        btn.className = "teacher-only bg-rose-600 hover:bg-rose-700 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5 animate-pulse";
+        icon.className = "fa-solid fa-eye";
+        text.innerText = "결과 공개";
+      }
     }
 
     function getStudentJoinUrl() {
@@ -2274,18 +2314,47 @@
       const teacherEls = document.querySelectorAll('.teacher-only');
       const studentEls = document.querySelectorAll('.student-only');
       const roleBar = document.getElementById('teacherRoleBar');
+      const toolbarRow = document.getElementById('whiteboardToolbarRow');
       const groupAddBtn = document.getElementById('btnAddNewGroup');
+      const autoCatBtn = document.getElementById('btnAutoCategorize');
+      const submitBtn = document.getElementById('btnOpenSubmitModal');
+      const overlaySubmitBtn = document.getElementById('overlaySubmitBtn');
+      const roleText = document.getElementById('studentRoleIndicatorText');
+      const roleIndicator = document.getElementById('studentRoleIndicator');
 
       if (appState.isStudentView) {
         teacherEls.forEach(el => el.classList.add('hidden'));
         studentEls.forEach(el => el.classList.remove('hidden'));
         if (roleBar) roleBar.classList.add('hidden');
-        if (groupAddBtn) groupAddBtn.classList.toggle('hidden', appState.studentRole !== 'editor');
+        if (roleIndicator) roleIndicator.classList.remove('hidden');
+
+        const roleLabels = { viewer: '뷰어 (읽기 전용)', contributor: '작성자 (생각 제출 가능)', editor: '편집자 (자유 배치/이동)' };
+        if (roleText) roleText.innerText = roleLabels[appState.studentRole] || '작성자';
+
+        if (appState.studentRole === 'viewer') {
+          if (toolbarRow) toolbarRow.classList.add('hidden');
+          if (submitBtn) submitBtn.classList.add('opacity-40', 'pointer-events-none');
+          if (overlaySubmitBtn) overlaySubmitBtn.classList.add('hidden');
+        } else if (appState.studentRole === 'contributor') {
+          if (toolbarRow) toolbarRow.classList.add('hidden');
+          if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
+          if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
+        } else if (appState.studentRole === 'editor') {
+          if (toolbarRow) toolbarRow.classList.remove('hidden');
+          if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
+          if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
+          if (groupAddBtn) groupAddBtn.classList.remove('hidden');
+          if (autoCatBtn) autoCatBtn.classList.remove('hidden');
+        }
       } else {
         teacherEls.forEach(el => el.classList.remove('hidden'));
         studentEls.forEach(el => el.classList.add('hidden'));
         if (roleBar) roleBar.classList.remove('hidden');
+        if (toolbarRow) toolbarRow.classList.remove('hidden');
         if (groupAddBtn) groupAddBtn.classList.remove('hidden');
+        if (autoCatBtn) autoCatBtn.classList.remove('hidden');
+        if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
+        if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
       }
     }
 
@@ -2411,7 +2480,7 @@
           ctx.stroke();
         } else if (item.type === 'arrow') {
           const { startPt, endPt } = getArrowEndpoints(item);
-          drawArrowOnContext(ctx, startPt.x, startPt.y + 110, endPt.x, endPt.y + 110, item.color, item.size);
+          drawArrowOnContext(ctx, startPt.x, startPt.y + 110, endPt.x, endPt.y, item.color, item.size);
         }
         ctx.restore();
       });
@@ -2456,7 +2525,10 @@
       } else {
         const p = projectsDatabase[appState.activeProjectId];
         if (p.roomCode) appState.roomCode = p.roomCode;
-        if (p.topic) appState.topic = p.topic;
+        if (p.topic) {
+          appState.topic = p.topic;
+          syncTopicToUI(p.topic);
+        }
         appState.submissions = p.submissions || [];
         if (p.groups) appState.groups = p.groups;
         if (p.wordPositions) appState.wordPositions = p.wordPositions;
@@ -2581,8 +2653,8 @@
             submissions: [],
             wordPositions: {},
             groups: [
-              { id: 'grp_1', title: '1모둠', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 30, width: 280, height: 260 },
-              { id: 'grp_2', title: '2모둠', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 30, width: 280, height: 260 }
+              { id: 'grp_1', title: '1모둠', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 280, height: 260 },
+              { id: 'grp_2', title: '2모둠', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 70, width: 280, height: 260 }
             ],
             drawings: [],
             customMerges: {},
@@ -2609,7 +2681,7 @@
       appState.drawings = p.drawings || [];
       appState.customMerges = p.customMerges || {};
 
-      document.getElementById('displayTopic').innerText = appState.topic;
+      syncTopicToUI(appState.topic);
       document.getElementById('headerRoomCode').innerText = appState.roomCode;
       updateActiveProjectBadge();
       renderUnifiedBoard();
@@ -2705,9 +2777,9 @@
           { id: '6', author: '6번', rawText: '생물, 메뚜기, 개구리, 뱀, 세균', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 30, width: 270, height: 250 },
-          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 330, y: 30, width: 270, height: 250 },
-          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-purple-50/90 border-purple-300 text-purple-950', x: 630, y: 30, width: 270, height: 250 }
+          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 270, height: 250 },
+          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 330, y: 70, width: 270, height: 250 },
+          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-purple-50/90 border-purple-300 text-purple-950', x: 630, y: 70, width: 270, height: 250 }
         ];
       } else if (type === 'env') {
         appState.topic = "지구를 지키는 환경 보호 실천";
@@ -2717,12 +2789,12 @@
           { id: '3', author: '3번', rawText: '플라스틱 안쓰기, 텀블러, 대중교통 이용', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '에너지 절약', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 40, y: 30, width: 280, height: 250 },
-          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 350, y: 30, width: 280, height: 250 }
+          { id: 'grp_1', title: '에너지 절약', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 40, y: 70, width: 280, height: 250 },
+          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 350, y: 70, width: 280, height: 250 }
         ];
       }
 
-      document.getElementById('displayTopic').innerText = appState.topic;
+      syncTopicToUI(appState.topic);
       renderUnifiedBoard();
       autoSaveActiveProject();
       launchConfetti({ particleCount: 50, origin: { y: 0.5 } });
@@ -2732,10 +2804,18 @@
     function changeCloudTheme() {
       appState.theme = appState.theme === 'default' ? 'chalkboard' : 'default';
       const board = document.getElementById('boardContainer');
+      const banner = document.getElementById('boardHeaderTitleBanner');
+
       if (appState.theme === 'chalkboard') {
         board.className = "flex-1 chalk-grid-bg rounded-3xl border-4 border-amber-950 shadow-xl relative overflow-hidden flex flex-col min-h-[540px]";
+        if (banner) {
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white px-5 py-2 rounded-2xl border-2 border-emerald-500/50 shadow-md backdrop-blur-md transition-all active:scale-95";
+        }
       } else {
         board.className = "flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
+        if (banner) {
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-2 bg-white/95 hover:bg-white text-slate-800 px-5 py-2 rounded-2xl border-2 border-indigo-200 hover:border-indigo-400 shadow-md backdrop-blur-md transition-all active:scale-95";
+        }
       }
       renderUnifiedBoard();
       autoSaveActiveProject();
@@ -2750,7 +2830,8 @@
       const val = document.getElementById('topicInput').value.trim();
       if (val) {
         appState.topic = val;
-        document.getElementById('displayTopic').innerText = val;
+        syncTopicToUI(val);
+        broadcastState({ topic: val });
         autoSaveActiveProject();
       }
       closeTopicModal();
@@ -2818,13 +2899,16 @@
         appState.isTeacherAuthenticated = false;
         applyStudentModeUI();
         document.getElementById('headerRoomCode').innerText = appState.roomCode;
+        syncTopicToUI(appState.topic);
         renderUnifiedBoard();
         setTimeout(() => { openStudentModal(); }, 400);
       } else {
         document.getElementById('headerRoomCode').innerText = appState.roomCode;
         initProjectStorage();
         updateTeacherAuthUI();
+        updateRevealBtnUI();
         applyStudentModeUI();
+        syncTopicToUI(appState.topic);
 
         renderUnifiedBoard();
 
