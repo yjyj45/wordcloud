@@ -268,19 +268,30 @@
       
       <div id="boardContainer" class="flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
         
-        <!-- [추가] 보드 상단 중앙 대형 수업 주제 타이틀 배너 -->
-        <div id="boardHeaderTitleBanner" class="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[85%] sm:max-w-[70%] text-center">
+        <!-- [개편] 보드 상단 중앙 초대형 강조 타이틀 배너 (이모지 & 그라데이션 포인트) -->
+        <div id="boardHeaderTitleBanner" class="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[90%] sm:max-w-[78%] text-center">
           <div onclick="openTopicModal()" 
-               class="cursor-pointer group inline-flex items-center gap-2 bg-white/95 hover:bg-white text-slate-800 px-5 py-2 rounded-2xl border-2 border-indigo-200 hover:border-indigo-400 shadow-md backdrop-blur-md transition-all active:scale-95" 
-               title="클릭하여 수업 주제를 바로 수정하세요">
-            <span class="w-6 h-6 rounded-lg bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-black transition">
-              <i class="fa-solid fa-quote-left"></i>
+               class="cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-white/40 hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95" 
+               title="클릭하여 오늘의 수업 주제를 바로 변경하세요">
+            
+            <!-- 강조 배움 뱃지 아이콘 -->
+            <span class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-white/20 backdrop-blur border border-white/30 text-amber-300 flex items-center justify-center text-sm sm:text-lg shadow-inner group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-bullseye"></i>
             </span>
-            <h2 id="boardCenterTopicText" class="text-base sm:text-xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition truncate max-w-md sm:max-w-xl">
-              오늘의 수업 주제를 입력하세요
-            </h2>
-            <span class="text-slate-400 group-hover:text-indigo-600 text-xs ml-0.5 transition">
-              <i class="fa-solid fa-pen-to-square"></i>
+            
+            <div class="flex flex-col text-left min-w-0 pr-1">
+              <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-indigo-200 flex items-center gap-1">
+                <span>🎯 오늘의 수업 주제</span>
+                <span class="bg-amber-400 text-slate-900 font-extrabold text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-md">핵심 생각</span>
+              </span>
+              <h2 id="boardCenterTopicText" class="text-base sm:text-2xl font-black tracking-tight text-white drop-shadow-sm truncate max-w-xs sm:max-w-xl md:max-w-2xl leading-snug">
+                오늘의 수업 주제를 입력하세요
+              </h2>
+            </div>
+
+            <!-- 수정 버튼 -->
+            <span class="w-7 h-7 rounded-xl bg-white/15 hover:bg-white/30 text-indigo-100 flex items-center justify-center text-xs ml-auto transition">
+              <i class="fa-solid fa-pen"></i>
             </span>
           </div>
         </div>
@@ -311,7 +322,7 @@
         <!-- Freeform Interactive DOM Canvas -->
         <div id="unifiedBoardCanvas" class="flex-1 relative w-full h-full overflow-hidden p-4 min-h-[460px]">
           
-          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400 mt-12">
+          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400 mt-16">
             <div class="w-14 h-14 rounded-full bg-slate-200/80 flex items-center justify-center text-2xl text-slate-400 mb-2">
               <i class="fa-regular fa-lightbulb"></i>
             </div>
@@ -834,9 +845,9 @@
       submissions: [],
       wordPositions: {},
       groups: [
-        // 상단 타이틀 배너와 겹치지 않도록 기본 y 좌표를 70px로 정돈
-        { id: 'grp_1', title: '1모둠 (또는 그룹 1)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 280, height: 260 },
-        { id: 'grp_2', title: '2모둠 (또는 그룹 2)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 70, width: 280, height: 260 }
+        // 상단 타이틀 배너와 겹치지 않도록 기본 y 좌표를 80px로 정돈
+        { id: 'grp_1', title: '1모둠 (또는 그룹 1)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 280, height: 260 },
+        { id: 'grp_2', title: '2모둠 (또는 그룹 2)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 80, width: 280, height: 260 }
       ],
       drawings: [],
       autoMergeEnabled: true,
@@ -862,7 +873,6 @@
       return String(Math.floor(100000 + Math.random() * 900000));
     }
 
-    // 수업 주제를 상단 헤더와 보드 중앙 대형 배너에 동시 반영하는 함수
     function syncTopicToUI(topicStr) {
       const hTopic = document.getElementById('displayTopic');
       const bTopic = document.getElementById('boardCenterTopicText');
@@ -1288,7 +1298,7 @@
 
       appState.groups.forEach((grp, idx) => {
         if (grp.x === undefined) grp.x = 30 + (idx % 3) * 300;
-        if (grp.y === undefined) grp.y = 70 + Math.floor(idx / 3) * 280;
+        if (grp.y === undefined) grp.y = 80 + Math.floor(idx / 3) * 280;
 
         const groupDiv = document.createElement('div');
         groupDiv.id = `group_zone_${grp.id}`;
@@ -1342,7 +1352,7 @@
           const row = Math.floor(index / 5);
           appState.wordPositions[item.representative] = {
             x: Math.min(40 + (col * 180), boardW - 140),
-            y: Math.min(350 + (row * 65), boardH - 70),
+            y: Math.min(360 + (row * 65), boardH - 70),
             inGroup: null
           };
         }
@@ -1979,7 +1989,7 @@
         title: title,
         color: color,
         x: 40 + offset,
-        y: 70 + offset,
+        y: 80 + offset,
         width: 280,
         height: 260
       });
@@ -2480,7 +2490,7 @@
           ctx.stroke();
         } else if (item.type === 'arrow') {
           const { startPt, endPt } = getArrowEndpoints(item);
-          drawArrowOnContext(ctx, startPt.x, startPt.y + 110, endPt.x, endPt.y, item.color, item.size);
+          drawArrowOnContext(ctx, startPt.x, startPt.y + 110, endPt.x, endPt.y + 110, item.color, item.size);
         }
         ctx.restore();
       });
@@ -2653,8 +2663,8 @@
             submissions: [],
             wordPositions: {},
             groups: [
-              { id: 'grp_1', title: '1모둠', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 280, height: 260 },
-              { id: 'grp_2', title: '2모둠', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 70, width: 280, height: 260 }
+              { id: 'grp_1', title: '1모둠', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 280, height: 260 },
+              { id: 'grp_2', title: '2모둠', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 80, width: 280, height: 260 }
             ],
             drawings: [],
             customMerges: {},
@@ -2777,9 +2787,9 @@
           { id: '6', author: '6번', rawText: '생물, 메뚜기, 개구리, 뱀, 세균', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 70, width: 270, height: 250 },
-          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 330, y: 70, width: 270, height: 250 },
-          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-purple-50/90 border-purple-300 text-purple-950', x: 630, y: 70, width: 270, height: 250 }
+          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 270, height: 250 },
+          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 330, y: 80, width: 270, height: 250 },
+          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-purple-50/90 border-purple-300 text-purple-950', x: 630, y: 80, width: 270, height: 250 }
         ];
       } else if (type === 'env') {
         appState.topic = "지구를 지키는 환경 보호 실천";
@@ -2789,8 +2799,8 @@
           { id: '3', author: '3번', rawText: '플라스틱 안쓰기, 텀블러, 대중교통 이용', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '에너지 절약', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 40, y: 70, width: 280, height: 250 },
-          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 350, y: 70, width: 280, height: 250 }
+          { id: 'grp_1', title: '에너지 절약', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 40, y: 80, width: 280, height: 250 },
+          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 350, y: 80, width: 280, height: 250 }
         ];
       }
 
@@ -2809,12 +2819,12 @@
       if (appState.theme === 'chalkboard') {
         board.className = "flex-1 chalk-grid-bg rounded-3xl border-4 border-amber-950 shadow-xl relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white px-5 py-2 rounded-2xl border-2 border-emerald-500/50 shadow-md backdrop-blur-md transition-all active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-emerald-400/60 hover:border-yellow-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
         }
       } else {
         board.className = "flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-2 bg-white/95 hover:bg-white text-slate-800 px-5 py-2 rounded-2xl border-2 border-indigo-200 hover:border-indigo-400 shadow-md backdrop-blur-md transition-all active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-white/40 hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
         }
       }
       renderUnifiedBoard();
