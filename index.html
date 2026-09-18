@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>우리 반 생각나눔 & 유목화 스마트 워드보드</title>
-  
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -21,7 +21,7 @@
 
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- QRious: Canvas QR Code Generator -->
+  <!-- QRious Canvas QR Code Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
@@ -31,161 +31,162 @@
       -webkit-user-select: none;
       touch-action: manipulation;
     }
-    .chalkboard-bg {
-      background: radial-gradient(circle at center, #234731 0%, #12281b 100%);
-    }
-    .dot-grid-bg {
-      background-color: #f8fafc;
-      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
-      background-size: 22px 22px;
+    .pastel-grid-bg {
+      background-color: #FAF8F5;
+      background-image: radial-gradient(#E2D9CC 1.4px, transparent 1.4px);
+      background-size: 24px 24px;
     }
     .chalk-grid-bg {
-      background-color: #173223;
-      background-image: radial-gradient(#2b563c 1.5px, transparent 1.5px);
-      background-size: 22px 22px;
+      background-color: #173724;
+      background-image: radial-gradient(#2b5e3c 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
     }
     .interactive-element {
       touch-action: none;
-      transition: box-shadow 0.15s, transform 0.1s;
+      transition: box-shadow 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.15s ease;
     }
     .interactive-element:hover {
-      box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 12px 24px -6px rgba(180, 150, 130, 0.28);
     }
     .is-dragging {
-      opacity: 0.92;
+      opacity: 0.94;
       z-index: 100 !important;
       cursor: grabbing !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: 0 22px 30px -8px rgba(140, 110, 180, 0.35) !important;
+      transform: scale(1.04) rotate(-1deg);
     }
     .node-target-hover {
-      outline: 3px dashed #4f46e5 !important;
-      outline-offset: 3px;
+      outline: 3.5px dashed #A78BFA !important;
+      outline-offset: 4px;
       transform: scale(1.03) !important;
     }
     .arrow-del-btn {
-      transition: all 0.15s ease-in-out;
-      transform: translate(-50%, -50%) scale(0.85);
-      opacity: 0.75;
+      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: translate(-50%, -50%) scale(0.9);
+      opacity: 0.82;
     }
     .arrow-del-btn:hover {
-      transform: translate(-50%, -50%) scale(1.15);
+      transform: translate(-50%, -50%) scale(1.2);
       opacity: 1;
     }
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.04);
-      border-radius: 4px;
+      background: rgba(230, 220, 210, 0.3);
+      border-radius: 6px;
     }
     ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
+      background: #D8CEBE;
+      border-radius: 6px;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col overflow-hidden">
+<body class="bg-[#FDFBF7] text-[#4A4036] min-h-screen flex flex-col overflow-hidden">
 
   <!-- MAIN APP CONTAINER -->
   <div id="teacherAppRoot" class="flex-1 flex flex-col min-h-0">
-    
+
     <!-- TOP APP BAR -->
-    <header class="bg-white/95 backdrop-blur shadow-sm border-b border-slate-200 sticky top-0 z-40 px-3 py-2 sm:px-5">
+    <header class="bg-white/85 backdrop-blur-md shadow-sm border-b border-[#F0EAE1] sticky top-0 z-40 px-3 py-2 sm:px-5">
       <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
-        
+
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-200">
-            <i class="fa-solid fa-cloud-bolt"></i>
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-400 to-pink-300 text-white flex items-center justify-center text-lg shadow-sm shadow-pink-200">
+            <i class="fa-solid fa-cloud-sun"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">생각나눔 스마트보드</h1>
-              
-              <span id="cloudStatusBadge" class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-lg border border-emerald-200 flex items-center gap-1">
-                <i class="fa-solid fa-cloud text-emerald-500"></i> <span id="cloudStatusText">클라우드 연결됨</span>
+              <h1 class="text-sm sm:text-base font-black text-[#38302A] leading-tight flex items-center gap-1.5">
+                <span>생각나눔 스마트보드</span>
+                <span class="text-xs">✨</span>
+              </h1>
+
+              <span id="cloudStatusBadge" class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i> <span id="cloudStatusText">정상 실행</span>
               </span>
 
-              <span id="roomCodeBadge" onclick="openShareModal()" class="cursor-pointer bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-black px-2 py-0.5 rounded-lg border border-indigo-200 flex items-center gap-1 transition" title="학생 초대 QR 열기">
-                <i class="fa-solid fa-tower-broadcast text-indigo-500 animate-pulse"></i> 코드: <span id="headerRoomCode">------</span>
-              </span>
-              
-              <span id="liveSubmitPill" class="bg-rose-100 text-rose-700 text-[11px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-circle text-[7px] text-rose-500"></i> 제출 <span id="headerStudentCount">0</span>명 (<span id="headerRawCount">0</span>개)
+              <span id="roomCodeBadge" onclick="openShareModal()" class="cursor-pointer bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-black px-2.5 py-0.5 rounded-full border border-violet-200 flex items-center gap-1 transition" title="학생 초대 QR 열기">
+                <i class="fa-solid fa-tower-broadcast text-violet-500 animate-pulse text-[10px]"></i> 코드: <span id="headerRoomCode">------</span>
               </span>
 
-              <span id="studentRoleIndicator" class="student-only hidden text-xs font-bold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
-                권한: <b id="studentRoleIndicatorText" class="text-indigo-600">작성자</b>
+              <span id="liveSubmitPill" class="bg-rose-50 text-rose-700 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-rose-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-circle text-[7px] text-rose-400"></i> 제출 <span id="headerStudentCount" class="font-black">0</span>명 (<span id="headerRawCount">0</span>개)
+              </span>
+
+              <span id="studentRoleIndicator" class="student-only hidden text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#E9E0D4] bg-[#F7F2EA] text-[#6A5D4D]">
+                권한: <b id="studentRoleIndicatorText" class="text-violet-600">작성자</b>
               </span>
             </div>
-            <div class="flex items-center gap-1.5 text-xs text-slate-500">
-              <span class="font-medium text-slate-700">주제:</span>
-              <span id="displayTopic" class="font-bold text-indigo-600 underline cursor-pointer hover:text-indigo-800" onclick="openTopicModal()" title="주제 수정">오늘의 수업 주제를 입력하세요</span>
-              <button onclick="openTopicModal()" class="text-slate-400 hover:text-indigo-600 p-0.5 teacher-only"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <span class="text-slate-300 teacher-only">|</span>
-              <span id="activeProjectBadge" onclick="openProjectModal()" class="teacher-only cursor-pointer bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 px-2 py-0.5 rounded-md font-bold text-[11px] flex items-center gap-1 transition" title="프로젝트 보관함">
-                <i class="fa-solid fa-folder text-amber-500"></i> <span id="activeProjectName">기본 프로젝트</span>
+            <div class="flex items-center gap-1.5 text-xs text-[#827464] mt-0.5">
+              <span class="font-medium">수업 주제:</span>
+              <span id="displayTopic" class="font-bold text-violet-700 hover:text-violet-900 cursor-pointer underline decoration-violet-300 underline-offset-2" onclick="openTopicModal()" title="주제 수정">오늘의 수업 주제를 입력하세요</span>
+              <button onclick="openTopicModal()" class="text-[#B0A290] hover:text-violet-600 p-0.5 teacher-only"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <span class="text-[#E0D7C9] teacher-only">|</span>
+              <span id="activeProjectBadge" onclick="openProjectModal()" class="teacher-only cursor-pointer bg-[#F5EFE6] hover:bg-violet-50 text-[#6B5E4E] hover:text-violet-700 px-2 py-0.5 rounded-lg font-bold text-[11px] flex items-center gap-1 transition" title="프로젝트 보관함">
+                <i class="fa-solid fa-folder-open text-amber-500"></i> <span id="activeProjectName">기본 프로젝트</span>
               </span>
             </div>
           </div>
         </div>
 
         <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
-          
-          <button id="btnProjects" onclick="openProjectModal()" class="teacher-only bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-200 transition flex items-center gap-1.5">
+
+          <button id="btnProjects" onclick="openProjectModal()" class="teacher-only bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-2xl border border-amber-200/80 transition flex items-center gap-1.5 shadow-2xs">
             <i class="fa-solid fa-box-archive text-amber-600"></i> <span class="hidden sm:inline">보관함</span>
           </button>
 
-          <button id="btnShareStudent" onclick="openShareModal()" class="teacher-only bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-            <i class="fa-solid fa-qrcode text-amber-300"></i> <span>학생 QR 참여</span>
+          <button id="btnShareStudent" onclick="openShareModal()" class="teacher-only bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 active:scale-95 text-white text-xs font-bold px-3.5 py-1.5 rounded-2xl shadow-sm shadow-purple-200 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-qrcode text-yellow-200"></i> <span>학생 참여 QR</span>
           </button>
 
-          <button id="revealToggleBtn" onclick="toggleResultReveal()" class="teacher-only bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-            <i id="revealIcon" class="fa-solid fa-eye"></i> 
+          <button id="revealToggleBtn" onclick="toggleResultReveal()" class="teacher-only bg-rose-400 hover:bg-rose-500 active:scale-95 text-white text-xs font-black px-3.5 py-1.5 rounded-2xl shadow-sm shadow-rose-200 transition flex items-center gap-1.5">
+            <i id="revealIcon" class="fa-solid fa-eye"></i>
             <span id="revealText">결과 공개</span>
           </button>
 
-          <button id="teacherAuthBtn" onclick="toggleTeacherLock()" class="teacher-only bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5" title="교사 잠금 / 해제">
-            <i id="teacherAuthIcon" class="fa-solid fa-lock-open"></i> <span id="teacherAuthText" class="hidden sm:inline">교사 인증됨</span>
+          <button id="teacherAuthBtn" onclick="toggleTeacherLock()" class="teacher-only bg-[#EFE9DF] hover:bg-[#E5DDCF] text-[#554A3E] text-xs font-bold px-3 py-1.5 rounded-2xl border border-[#DFD5C5] transition flex items-center gap-1.5" title="교사 잠금 / 해제">
+            <i id="teacherAuthIcon" class="fa-solid fa-lock-open text-amber-600"></i> <span id="teacherAuthText" class="hidden sm:inline">교사 모드</span>
           </button>
 
-          <button id="btnOpenSubmitModal" onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5">
-            <i class="fa-solid fa-paper-plane"></i> <span>생각 쓰기</span>
+          <button id="btnOpenSubmitModal" onclick="openStudentModal()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 active:scale-95 text-white text-xs font-bold px-3.5 py-1.5 rounded-2xl shadow-sm shadow-teal-200 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane text-yellow-200"></i> <span>생각 쓰기</span>
           </button>
 
-          <button onclick="exportBoardAsJPG()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-indigo-200 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-camera"></i> <span>JPG 저장</span>
+          <button onclick="exportBoardAsJPG()" class="bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-bold px-3 py-1.5 rounded-2xl border border-sky-200/80 transition flex items-center gap-1.5 shadow-2xs">
+            <i class="fa-solid fa-camera text-sky-600"></i> <span>JPG 저장</span>
           </button>
 
-          <button id="btnSwitchToTeacher" onclick="switchToTeacherModeDirect()" class="student-only hidden bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1">
-            <i class="fa-solid fa-key text-amber-400"></i> <span>교사 전환</span>
+          <button id="btnSwitchToTeacher" onclick="switchToTeacherModeDirect()" class="student-only hidden bg-[#4A4036] hover:bg-[#38302A] text-white text-xs font-bold px-3 py-1.5 rounded-2xl transition flex items-center gap-1">
+            <i class="fa-solid fa-key text-amber-300"></i> <span>교사 전환</span>
           </button>
 
           <div class="relative teacher-only" id="moreMenuContainer">
-            <button onclick="toggleMenu()" class="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200">
+            <button onclick="toggleMenu()" class="p-1.5 text-[#7C6E5E] hover:text-[#38302A] bg-[#F7F2EA] hover:bg-[#EFE9DF] rounded-2xl border border-[#E8DFCFA]">
               <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
-            <div id="quickMenu" class="hidden absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 py-1.5 text-xs font-medium">
-              <button onclick="openSubmissionsManager()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700">
-                <i class="fa-solid fa-list-check text-indigo-500"></i> 제출 게시글 관리·삭제
+            <div id="quickMenu" class="hidden absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-[#EAE2D5] rounded-3xl shadow-xl z-50 py-2 text-xs font-medium text-[#4A4036]">
+              <button onclick="openSubmissionsManager()" class="w-full text-left px-4 py-2 hover:bg-violet-50 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-violet-500"></i> 제출 게시글 관리·삭제
               </button>
-              <button onclick="openMergeManager()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700">
+              <button onclick="openMergeManager()" class="w-full text-left px-4 py-2 hover:bg-amber-50 flex items-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> 유사 낱말 병합 관리
               </button>
-              <button onclick="openChangePinModal()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700">
+              <button onclick="openChangePinModal()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2">
                 <i class="fa-solid fa-key text-amber-500"></i> 교사 PIN 변경
               </button>
               <button onclick="openStudentViewInNewTab()" class="w-full text-left px-4 py-2 hover:bg-emerald-50 text-emerald-700 flex items-center gap-2">
                 <i class="fa-solid fa-mobile-screen-button"></i> 학생 화면 새 탭으로 열기
               </button>
-              <div class="border-t border-slate-100 my-1"></div>
-              <button onclick="loadSampleData('bio')" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2">
-                <i class="fa-solid fa-frog text-emerald-500"></i> 예시: 생태계 낱말 불러오기
+              <div class="border-t border-[#F0EAE1] my-1"></div>
+              <button onclick="loadSampleData('bio')" class="w-full text-left px-4 py-2 hover:bg-emerald-50 flex items-center gap-2 text-emerald-800">
+                <i class="fa-solid fa-seedling text-emerald-500"></i> 예시: 생태계 낱말 불러오기
               </button>
-              <button onclick="loadSampleData('env')" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2">
-                <i class="fa-solid fa-seedling text-teal-500"></i> 예시: 환경 보호 낱말 불러오기
+              <button onclick="loadSampleData('env')" class="w-full text-left px-4 py-2 hover:bg-teal-50 flex items-center gap-2 text-teal-800">
+                <i class="fa-solid fa-earth-americas text-teal-500"></i> 예시: 환경 보호 낱말 불러오기
               </button>
-              <div class="border-t border-slate-100 my-1"></div>
+              <div class="border-t border-[#F0EAE1] my-1"></div>
               <button onclick="toggleFullscreen()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2">
                 <i class="fa-solid fa-expand"></i> 전체화면
               </button>
@@ -201,63 +202,63 @@
 
     <!-- FLOATING SMART WHITEBOARD TOOLBAR -->
     <div id="whiteboardToolbarRow" class="max-w-7xl mx-auto w-full px-3 pt-2 pb-1 flex flex-wrap items-center justify-between gap-2 z-30">
-      
-      <div id="drawingToolControls" class="bg-white/95 backdrop-blur px-2.5 py-1.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-1.5 text-xs">
-        
-        <div class="inline-flex bg-slate-100 p-0.5 rounded-xl border border-slate-200">
-          <button id="toolBtnSelect" onclick="setBoardTool('select')" class="px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1" title="낱말 및 그룹 이동">
+
+      <div id="drawingToolControls" class="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-3xl border border-[#EAE2D5] shadow-xs flex flex-wrap items-center gap-2 text-xs">
+
+        <div class="inline-flex bg-[#F5EFE6] p-0.5 rounded-2xl border border-[#E5DCCE]">
+          <button id="toolBtnSelect" onclick="setBoardTool('select')" class="px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5" title="낱말 및 그룹 이동">
             <i class="fa-solid fa-arrow-pointer"></i> <span>선택·이동</span>
           </button>
-          <button id="toolBtnPen" onclick="setBoardTool('pen')" class="px-2.5 py-1 rounded-lg font-bold transition text-slate-600 hover:text-indigo-600 flex items-center gap-1" title="자유 판서 펜">
+          <button id="toolBtnPen" onclick="setBoardTool('pen')" class="px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5" title="자유 판서 펜">
             <i class="fa-solid fa-pencil"></i> <span>펜</span>
           </button>
-          <button id="toolBtnHighlighter" onclick="setBoardTool('highlighter')" class="px-2.5 py-1 rounded-lg font-bold transition text-slate-600 hover:text-indigo-600 flex items-center gap-1" title="반투명 형광펜">
+          <button id="toolBtnHighlighter" onclick="setBoardTool('highlighter')" class="px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5" title="반투명 형광펜">
             <i class="fa-solid fa-highlighter"></i> <span>형광펜</span>
           </button>
-          <button id="toolBtnArrow" onclick="setBoardTool('arrow')" class="px-2.5 py-1 rounded-lg font-bold transition text-slate-600 hover:text-indigo-600 flex items-center gap-1" title="카드 간 자석 화살표 연결">
-            <i class="fa-solid fa-arrow-right"></i> <span>화살표 연결</span>
+          <button id="toolBtnArrow" onclick="setBoardTool('arrow')" class="px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5" title="카드 간 자석 화살표 연결">
+            <i class="fa-solid fa-arrow-right"></i> <span>화살표</span>
           </button>
         </div>
 
-        <div id="drawingColorPalette" class="flex items-center gap-1 pl-1 border-l border-slate-200">
-          <button onclick="setDrawColor('#1e293b')" class="w-5 h-5 rounded-full bg-slate-800 border-2 border-white shadow-xs color-pick-btn ring-2 ring-indigo-500" data-color="#1e293b"></button>
-          <button onclick="setDrawColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 border-2 border-white shadow-xs color-pick-btn" data-color="#ef4444"></button>
-          <button onclick="setDrawColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-xs color-pick-btn" data-color="#3b82f6"></button>
-          <button onclick="setDrawColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-white shadow-xs color-pick-btn" data-color="#10b981"></button>
-          <button onclick="setDrawColor('#eab308')" class="w-5 h-5 rounded-full bg-amber-400 border-2 border-white shadow-xs color-pick-btn" data-color="#eab308"></button>
-          <button onclick="setDrawColor('#a855f7')" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-white shadow-xs color-pick-btn" data-color="#a855f7"></button>
+        <div id="drawingColorPalette" class="flex items-center gap-1.5 pl-1 border-l border-[#EAE2D5]">
+          <button onclick="setDrawColor('#4A4036')" class="w-5 h-5 rounded-full bg-[#4A4036] border-2 border-white shadow-2xs color-pick-btn ring-2 ring-violet-400" data-color="#4A4036"></button>
+          <button onclick="setDrawColor('#FB7185')" class="w-5 h-5 rounded-full bg-rose-400 border-2 border-white shadow-2xs color-pick-btn" data-color="#FB7185"></button>
+          <button onclick="setDrawColor('#60A5FA')" class="w-5 h-5 rounded-full bg-blue-400 border-2 border-white shadow-2xs color-pick-btn" data-color="#60A5FA"></button>
+          <button onclick="setDrawColor('#34D399')" class="w-5 h-5 rounded-full bg-emerald-400 border-2 border-white shadow-2xs color-pick-btn" data-color="#34D399"></button>
+          <button onclick="setDrawColor('#FBBF24')" class="w-5 h-5 rounded-full bg-amber-400 border-2 border-white shadow-2xs color-pick-btn" data-color="#FBBF24"></button>
+          <button onclick="setDrawColor('#C084FC')" class="w-5 h-5 rounded-full bg-purple-400 border-2 border-white shadow-2xs color-pick-btn" data-color="#C084FC"></button>
         </div>
 
-        <div class="flex items-center gap-1 pl-1 border-l border-slate-200">
-          <button onclick="undoDrawingStroke()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition" title="마지막 판서/화살표 취소">
+        <div class="flex items-center gap-1.5 pl-1 border-l border-[#EAE2D5]">
+          <button onclick="undoDrawingStroke()" class="px-2.5 py-1 bg-[#F5EFE6] hover:bg-[#ECE3D5] text-[#554A3E] rounded-xl font-bold transition" title="마지막 판서/화살표 취소">
             <i class="fa-solid fa-rotate-left"></i> 되돌리기
           </button>
-          <button onclick="clearAllDrawings()" class="px-2 py-1 bg-slate-100 hover:bg-rose-100 hover:text-rose-700 text-slate-600 rounded-lg font-bold transition" title="판서 전체 지우기">
-            <i class="fa-solid fa-eraser"></i> 판서 지움
+          <button onclick="clearAllDrawings()" class="px-2.5 py-1 bg-[#F5EFE6] hover:bg-rose-100 hover:text-rose-700 text-[#7A6D5D] rounded-xl font-bold transition" title="판서 전체 지우기">
+            <i class="fa-solid fa-eraser"></i> 지우기
           </button>
         </div>
 
-        <div class="flex items-center gap-1.5 pl-1 border-l border-slate-200">
-          <button id="btnAddNewGroup" onclick="openNewGroupModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-xl shadow-xs transition flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> 새 그룹
+        <div class="flex items-center gap-1.5 pl-1 border-l border-[#EAE2D5]">
+          <button id="btnAddNewGroup" onclick="openNewGroupModal()" class="bg-violet-500 hover:bg-violet-600 text-white font-bold px-3 py-1 rounded-2xl shadow-2xs transition flex items-center gap-1">
+            <i class="fa-solid fa-plus text-yellow-200"></i> 새 그룹
           </button>
-          <button id="btnAutoCategorize" onclick="autoCategorizeSmart()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-xl transition flex items-center gap-1" title="비슷한 단어를 그룹으로 자동 추천 배치">
-            <i class="fa-solid fa-brain"></i> 자동 추천 분류
+          <button id="btnAutoCategorize" onclick="autoCategorizeSmart()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1 rounded-2xl transition flex items-center gap-1.5" title="비슷한 단어를 그룹으로 자동 추천 배치">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i> 자동 추천 분류
           </button>
         </div>
 
       </div>
 
       <div class="flex items-center gap-2 text-xs">
-        <div id="teacherRoleBar" class="teacher-only flex items-center gap-1 bg-white px-2 py-1 rounded-xl border border-slate-200 shadow-xs font-bold text-slate-600">
+        <div id="teacherRoleBar" class="teacher-only flex items-center gap-1 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-2xl border border-[#EAE2D5] shadow-xs font-bold text-[#6B5E4E]">
           <span>학생 권한:</span>
-          <button onclick="handleRoleClick('viewer')" id="roleBtnViewer" class="px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900">뷰어</button>
-          <button onclick="handleRoleClick('contributor')" id="roleBtnContributor" class="px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700 font-bold">작성자</button>
-          <button onclick="handleRoleClick('editor')" id="roleBtnEditor" class="px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900">편집자</button>
+          <button onclick="handleRoleClick('viewer')" id="roleBtnViewer" class="px-2.5 py-0.5 rounded-xl text-[11px] text-[#8B7C6B] hover:text-[#38302A]">뷰어</button>
+          <button onclick="handleRoleClick('contributor')" id="roleBtnContributor" class="px-2.5 py-0.5 rounded-xl text-[11px] bg-violet-100 text-violet-800 font-black">작성자</button>
+          <button onclick="handleRoleClick('editor')" id="roleBtnEditor" class="px-2.5 py-0.5 rounded-xl text-[11px] text-[#8B7C6B] hover:text-[#38302A]">편집자</button>
         </div>
 
-        <button onclick="changeCloudTheme()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold px-2.5 py-1 rounded-xl border border-slate-200 shadow-xs flex items-center gap-1">
-          <i class="fa-solid fa-palette text-indigo-500"></i> 테마
+        <button onclick="changeCloudTheme()" class="bg-white/90 hover:bg-[#F7F2EA] text-[#554A3E] font-bold px-3 py-1 rounded-2xl border border-[#EAE2D5] shadow-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-palette text-violet-500"></i> 테마
         </button>
       </div>
 
@@ -265,33 +266,29 @@
 
     <!-- MAIN WORKSPACE -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-3 flex flex-col min-h-0 relative">
-      
-      <div id="boardContainer" class="flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
-        
-        <!-- [개편] 보드 상단 중앙 초대형 강조 타이틀 배너 (이모지 & 그라데이션 포인트) -->
-        <div id="boardHeaderTitleBanner" class="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[90%] sm:max-w-[78%] text-center">
-          <div onclick="openTopicModal()" 
-               class="cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-white/40 hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95" 
-               title="클릭하여 오늘의 수업 주제를 바로 변경하세요">
-            
-            <!-- 강조 배움 뱃지 아이콘 -->
-            <span class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-white/20 backdrop-blur border border-white/30 text-amber-300 flex items-center justify-center text-sm sm:text-lg shadow-inner group-hover:rotate-12 transition-transform">
-              <i class="fa-solid fa-bullseye"></i>
+
+      <div id="boardContainer" class="flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
+
+        <!-- 대형 파스텔 타이틀 배너 -->
+        <div id="boardHeaderTitleBanner" class="absolute top-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[92%] sm:max-w-[75%] text-center">
+          <div onclick="openTopicModal()"
+               class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95">
+
+            <span class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-sm text-yellow-200 flex items-center justify-center text-sm shadow-inner group-hover:rotate-12 transition-transform">
+              <i class="fa-solid fa-star"></i>
             </span>
-            
+
             <div class="flex flex-col text-left min-w-0 pr-1">
-              <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-indigo-200 flex items-center gap-1">
-                <span>🎯 오늘의 수업 주제</span>
-                <span class="bg-amber-400 text-slate-900 font-extrabold text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-md">핵심 생각</span>
+              <span class="text-[10px] font-black uppercase tracking-wider text-purple-100 flex items-center gap-1.5">
+                <span>🌱 오늘 배울 핵심 주제</span>
               </span>
-              <h2 id="boardCenterTopicText" class="text-base sm:text-2xl font-black tracking-tight text-white drop-shadow-sm truncate max-w-xs sm:max-w-xl md:max-w-2xl leading-snug">
+              <h2 id="boardCenterTopicText" class="text-base sm:text-xl font-black tracking-tight text-white drop-shadow-xs truncate max-w-xs sm:max-w-md md:max-w-xl">
                 오늘의 수업 주제를 입력하세요
               </h2>
             </div>
 
-            <!-- 수정 버튼 -->
-            <span class="w-7 h-7 rounded-xl bg-white/15 hover:bg-white/30 text-indigo-100 flex items-center justify-center text-xs ml-auto transition">
-              <i class="fa-solid fa-pen"></i>
+            <span class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center text-xs ml-auto transition">
+              <i class="fa-solid fa-pencil"></i>
             </span>
           </div>
         </div>
@@ -301,18 +298,18 @@
         <div id="arrowActionsContainer" class="absolute inset-0 z-25 pointer-events-none"></div>
 
         <!-- WAITING/HIDDEN OVERLAY SCREEN -->
-        <div id="hiddenScreenOverlay" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center text-center p-8 bg-slate-900/40 backdrop-blur-md">
-          <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border border-slate-200">
-            <div class="w-16 h-16 bg-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 shadow-lg shadow-indigo-200 animate-bounce">
+        <div id="hiddenScreenOverlay" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center text-center p-8 bg-[#352D26]/45 backdrop-blur-md">
+          <div class="bg-white/95 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-2 border-pink-100">
+            <div class="w-16 h-16 bg-gradient-to-tr from-violet-400 to-pink-300 text-white rounded-3xl mx-auto flex items-center justify-center text-2xl mb-4 shadow-lg shadow-pink-200 animate-bounce">
               <i class="fa-solid fa-lock"></i>
             </div>
-            <h3 class="text-lg font-black text-slate-900 mb-1">선생님이 생각을 모으고 계십니다!</h3>
-            <p class="text-xs text-slate-500 mb-5">현재 <b id="overlaySubmitStats" class="text-indigo-600 font-black">0명(0개 낱말)</b>이 참여했습니다.<br>선생님이 결과를 공개하면 칠판에 나타납니다.</p>
+            <h3 class="text-lg font-black text-[#38302A] mb-1">선생님이 생각을 모으고 계십니다!</h3>
+            <p class="text-xs text-[#7A6D5D] mb-5">현재 <b id="overlaySubmitStats" class="text-violet-600 font-black">0명(0개 낱말)</b>이 참여했습니다.<br>선생님이 결과를 공개하면 예쁜 생각 구름이 나타납니다.</p>
             <div class="flex flex-col gap-2">
-              <button id="overlaySubmitBtn" onclick="openStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-paper-plane"></i> <span>내 생각 보내기</span>
+              <button id="overlaySubmitBtn" onclick="openStudentModal()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold px-5 py-2.5 rounded-2xl shadow-md shadow-teal-200 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-paper-plane text-yellow-200"></i> <span>내 생각 보내기</span>
               </button>
-              <button id="overlayTeacherRevealBtn" onclick="toggleResultReveal()" class="teacher-only bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow-md transition">
+              <button id="overlayTeacherRevealBtn" onclick="toggleResultReveal()" class="teacher-only bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow-md transition">
                 선생님: 결과 바로 공개하기
               </button>
             </div>
@@ -321,29 +318,29 @@
 
         <!-- Freeform Interactive DOM Canvas -->
         <div id="unifiedBoardCanvas" class="flex-1 relative w-full h-full overflow-hidden p-4 min-h-[460px]">
-          
-          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400 mt-16">
-            <div class="w-14 h-14 rounded-full bg-slate-200/80 flex items-center justify-center text-2xl text-slate-400 mb-2">
-              <i class="fa-regular fa-lightbulb"></i>
+
+          <div id="emptyCloudMsg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-[#9E9080] mt-16">
+            <div class="w-16 h-16 rounded-3xl bg-[#F0E8DC] flex items-center justify-center text-3xl text-[#B3A494] mb-3 shadow-inner">
+              <i class="fa-regular fa-face-smile"></i>
             </div>
-            <p class="text-sm font-bold text-slate-600">아직 등록된 생각이 없어요!</p>
-            <p class="text-xs text-slate-400 mt-0.5">상단의 [생각 쓰기]를 누르거나 학생 QR코드를 공유해 생각을 모아보세요.</p>
-            <button onclick="loadSampleData('bio')" class="mt-3 pointer-events-auto bg-white hover:bg-indigo-50 text-indigo-600 text-xs font-bold px-4 py-2 rounded-xl border border-indigo-200 shadow-xs transition teacher-only">
-              <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> (테스트용) 예시 낱말 불러오기
+            <p class="text-sm font-bold text-[#554A3E]">아직 등록된 생각이 없어요!</p>
+            <p class="text-xs text-[#A09282] mt-0.5">상단의 [생각 쓰기]를 누르거나 학생 QR코드를 열어 생각을 모아보세요.</p>
+            <button onclick="loadSampleData('bio')" class="mt-3.5 pointer-events-auto bg-white hover:bg-violet-50 text-violet-700 text-xs font-bold px-4 py-2 rounded-2xl border border-violet-200 shadow-2xs transition teacher-only">
+              <i class="fa-solid fa-seedling mr-1 text-emerald-500"></i> (테스트용) 예시 낱말 불러오기
             </button>
           </div>
 
         </div>
 
         <!-- Footer Status -->
-        <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-slate-400 pointer-events-none z-10">
+        <div class="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between text-[11px] text-[#8C7D6C] pointer-events-none z-10">
           <div>
-            <span class="bg-white/80 backdrop-blur px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 font-medium">
-              💡 <b>화살표</b>: 카드에서 다른 카드로 드래그하면 자석처럼 양쪽에 붙어 함께 움직입니다 (✕ 클릭 시 삭제).
+            <span class="bg-white/85 backdrop-blur-sm px-3 py-1 rounded-xl border border-[#EAE2D5] text-[#6B5E4E] font-medium shadow-2xs">
+              💡 <b>화살표</b>: 카드에서 다른 카드로 드래그하면 자석처럼 양쪽에 붙어 함께 움직입니다 (선 위 ✕ 클릭 시 삭제).
             </span>
           </div>
-          <div class="bg-white/80 backdrop-blur px-2.5 py-1 rounded-lg border border-slate-200 text-slate-500 font-medium">
-            참여 <span id="footerStuCount" class="font-bold text-indigo-600">0</span>명 | 통합 <span id="footerWordCount" class="font-bold text-indigo-600">0</span>종류
+          <div class="bg-white/85 backdrop-blur-sm px-3 py-1 rounded-xl border border-[#EAE2D5] text-[#6B5E4E] font-medium shadow-2xs">
+            참여 <span id="footerStuCount" class="font-bold text-violet-700">0</span>명 | 통합 <span id="footerWordCount" class="font-bold text-violet-700">0</span>종류
           </div>
         </div>
 
@@ -353,26 +350,26 @@
   </div>
 
   <!-- MODAL: Share Student QR & Realtime URL -->
-  <div id="shareModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+  <div id="shareModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-violet-100 text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-3">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
+          <div class="w-8 h-8 rounded-xl bg-violet-500 text-white flex items-center justify-center text-sm font-bold shadow-2xs">
             <i class="fa-solid fa-qrcode"></i>
           </div>
-          <h3 class="text-base font-bold text-slate-900">학생용 참여 QR코드 & 링크</h3>
+          <h3 class="text-base font-bold text-[#38302A]">학생 참여 QR코드 & 링크</h3>
         </div>
-        <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <button onclick="closeShareModal()" class="text-[#A09282] hover:text-[#38302A] p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-2 mb-3 flex items-center justify-between">
-        <span class="text-xs font-bold text-indigo-900">수업 입장 코드:</span>
-        <span id="modalBigRoomCode" class="text-lg font-black text-indigo-600 tracking-widest">------</span>
+      <div class="bg-violet-50/80 border border-violet-200 rounded-2xl p-2.5 mb-3 flex items-center justify-between">
+        <span class="text-xs font-bold text-violet-900">수업 입장 코드:</span>
+        <span id="modalBigRoomCode" class="text-lg font-black text-violet-600 tracking-widest">------</span>
       </div>
 
-      <div id="localFileWarningBox" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-2.5 mb-3 text-left">
+      <div id="localFileWarningBox" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-2.5 mb-3 text-left">
         <div class="flex items-center gap-1.5 text-amber-900 font-bold text-xs mb-1">
           <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> 내 컴퓨터(로컬 파일)에서 실행 중입니다
         </div>
@@ -380,73 +377,73 @@
           `file:///` 경로는 외부 기기에서 열 수 없습니다. <b>GitHub Pages</b> 웹 주소를 아래에 넣으시면 해당 주소로 즉시 QR이 생성됩니다.
         </p>
         <div class="flex gap-1">
-          <input type="text" id="customWebBaseUrl" placeholder="예: https://yjyj45.github.io/wordcloud" class="flex-1 px-2.5 py-1 text-xs bg-white border border-amber-300 rounded-lg outline-none font-mono">
-          <button onclick="applyCustomBaseUrl()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-2.5 py-1 rounded-lg">적용</button>
+          <input type="text" id="customWebBaseUrl" placeholder="예: https://yjyj45.github.io/wordcloud" class="flex-1 px-2.5 py-1 text-xs bg-white border border-amber-300 rounded-xl outline-none font-mono">
+          <button onclick="applyCustomBaseUrl()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1 rounded-xl">적용</button>
         </div>
       </div>
 
-      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 inline-block mb-3 shadow-inner">
-        <canvas id="standardQrCanvas" class="w-44 h-44 mx-auto bg-white p-2 rounded-xl shadow-sm"></canvas>
-        <span class="block text-[11px] font-bold text-slate-600 mt-1.5">📱 태블릿/스마트폰 카메라로 스캔하여 바로 접속</span>
+      <div class="bg-[#FAF8F5] p-3 rounded-2xl border border-[#EAE2D5] inline-block mb-3 shadow-inner">
+        <canvas id="standardQrCanvas" class="w-44 h-44 mx-auto bg-white p-2 rounded-2xl shadow-xs"></canvas>
+        <span class="block text-[11px] font-bold text-[#6B5E4E] mt-2">📱 스마트폰 / 태블릿 카메라로 비추면 바로 열립니다!</span>
       </div>
 
       <div class="flex items-center gap-2 mb-3">
-        <input id="studentShareUrl" type="text" readonly class="flex-1 bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none font-mono">
-        <button onclick="copyStudentLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1">
+        <input id="studentShareUrl" type="text" readonly class="flex-1 bg-[#F5EFE6] border border-[#DFD5C5] rounded-2xl px-3 py-2 text-xs text-[#554A3E] outline-none font-mono">
+        <button onclick="copyStudentLink()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3.5 py-2 rounded-2xl transition flex items-center gap-1 shadow-2xs">
           <i class="fa-solid fa-copy"></i> <span>복사</span>
         </button>
       </div>
 
-      <div class="flex justify-between items-center pt-1 border-t border-slate-100">
-        <button onclick="openStudentViewInNewTab()" class="text-xs font-bold text-indigo-600 hover:underline">
-          <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>새 탭에서 학생 화면 테스트
+      <div class="flex justify-between items-center pt-2 border-t border-[#F0EAE1]">
+        <button onclick="openStudentViewInNewTab()" class="text-xs font-bold text-violet-600 hover:underline">
+          <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>새 탭에서 학생 화면 보기
         </button>
-        <button onclick="closeShareModal()" class="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">닫기</button>
+        <button onclick="closeShareModal()" class="px-4 py-1.5 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">닫기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Full Student Submission -->
-  <div id="studentModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+  <div id="studentModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-pink-100">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-4">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-400 text-white flex items-center justify-center font-bold shadow-2xs">
             <i class="fa-solid fa-pencil"></i>
           </div>
-          <h3 class="text-base font-bold text-slate-800">생각 제출하기</h3>
+          <h3 class="text-base font-bold text-[#38302A]">내 생각 제출하기</h3>
         </div>
-        <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1">
+        <button onclick="closeStudentModal()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">학생 번호 (숫자만 입력)</label>
+          <label class="block text-xs font-bold text-[#554A3E] mb-1">학생 번호 (숫자만 입력)</label>
           <div class="relative flex items-center">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="modalStudentNumber" 
-                   placeholder="예: 1, 3, 24" 
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="modalStudentNumber"
+                   placeholder="예: 1, 3, 24"
                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                   class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none font-bold">
-            <span class="absolute right-3.5 text-xs font-black text-slate-400 pointer-events-none">번</span>
+                   class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none font-bold">
+            <span class="absolute right-3.5 text-xs font-black text-[#9E9080] pointer-events-none">번</span>
           </div>
-          <p class="text-[11px] text-slate-400 mt-1">
-            💡 같은 번호로 다시 제출하면 이전 응답이 최신 내용으로 <b>자동 수정(덮어쓰기)</b>됩니다.
+          <p class="text-[11px] text-[#9E9080] mt-1">
+            💡 같은 번호로 다시 제출하면 이전 내용이 <b>자동 수정(덮어쓰기)</b>됩니다.
           </p>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">생각 낱말들 (쉼표로 구분)</label>
-          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
-          <p class="text-[11px] text-slate-400 mt-1">
-            💡 단어 사이에 쉼표(,)를 넣으면 여러 낱말이 한 번에 등록됩니다.
+          <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
+          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+          <p class="text-[11px] text-[#9E9080] mt-1">
+            💡 단어 사이에 쉼표(,)를 넣으면 여러 단어가 한 번에 쏙 등록됩니다!
           </p>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button onclick="closeStudentModal()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-          <button onclick="submitModalWords()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold px-5 py-2 rounded-xl shadow-md transition">
+          <button onclick="closeStudentModal()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+          <button onclick="submitModalWords()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-xs sm:text-sm font-bold px-5 py-2 rounded-2xl shadow-sm shadow-teal-200 transition">
             제출 완료
           </button>
         </div>
@@ -455,38 +452,38 @@
   </div>
 
   <!-- MODAL: Project Archive -->
-  <div id="projectModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+  <div id="projectModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border-2 border-amber-100 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg shadow-md shadow-amber-200">
+          <div class="w-9 h-9 rounded-2xl bg-amber-400 text-white flex items-center justify-center text-lg shadow-sm shadow-amber-200">
             <i class="fa-solid fa-box-archive"></i>
           </div>
           <div>
-            <h3 class="text-base font-black text-slate-900">수업 프로젝트 보관함</h3>
-            <p class="text-xs text-slate-500">차시별, 학급별 생각나눔 및 판서 기록을 저장하고 불러오세요.</p>
+            <h3 class="text-base font-black text-[#38302A]">수업 프로젝트 보관함</h3>
+            <p class="text-xs text-[#7A6D5D]">차시별, 학급별 생각나눔 및 판서 기록을 저장하고 불러오세요.</p>
           </div>
         </div>
-        <button onclick="closeProjectModal()" class="text-slate-400 hover:text-slate-600 p-1 text-lg">
+        <button onclick="closeProjectModal()" class="text-[#A09282] hover:text-[#38302A] p-1 text-lg">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-2xl border border-slate-200 mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-[#FAF8F5] rounded-2xl border border-[#EAE2D5] mb-3">
         <div class="flex items-center gap-2">
-          <button onclick="openPromptNewProjectModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1">
-            <i class="fa-solid fa-folder-plus"></i> <span>새 프로젝트 시작</span>
+          <button onclick="openPromptNewProjectModal()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-2xl shadow-2xs transition flex items-center gap-1">
+            <i class="fa-solid fa-folder-plus text-yellow-200"></i> <span>새 프로젝트</span>
           </button>
-          <button onclick="saveCurrentProjectNow()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-300 transition flex items-center gap-1">
-            <i class="fa-solid fa-floppy-disk text-indigo-600"></i> <span>현재 저장</span>
+          <button onclick="saveCurrentProjectNow()" class="bg-white hover:bg-[#F5EFE6] text-[#554A3E] text-xs font-bold px-3 py-1.5 rounded-2xl border border-[#DFD5C5] transition flex items-center gap-1">
+            <i class="fa-solid fa-floppy-disk text-violet-500"></i> <span>현재 저장</span>
           </button>
         </div>
 
         <div class="flex items-center gap-2">
-          <button onclick="exportAllProjectsJson()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-xl transition">
+          <button onclick="exportAllProjectsJson()" class="bg-[#EFE9DF] hover:bg-[#E5DDCF] text-[#554A3E] text-xs font-bold px-2.5 py-1.5 rounded-2xl transition">
             <i class="fa-solid fa-file-export"></i> 백업 다운
           </button>
-          <label class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer">
+          <label class="bg-[#EFE9DF] hover:bg-[#E5DDCF] text-[#554A3E] text-xs font-bold px-2.5 py-1.5 rounded-2xl transition cursor-pointer">
             <i class="fa-solid fa-file-import"></i> 복원
             <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importProjectsJson(event)">
           </label>
@@ -495,379 +492,225 @@
 
       <div id="projectListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 py-1 min-h-[200px]"></div>
 
-      <div class="flex justify-end pt-3 border-t border-slate-100 mt-2">
-        <button onclick="closeProjectModal()" class="bg-slate-800 text-white text-xs font-bold px-5 py-2 rounded-xl">닫기</button>
+      <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
+        <button onclick="closeProjectModal()" class="bg-[#4A4036] text-white text-xs font-bold px-5 py-2 rounded-2xl">닫기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Custom Project Title Prompt -->
-  <div id="projectPromptModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
-      <h3 id="projectPromptTitle" class="text-base font-bold text-slate-900 mb-2">프로젝트 제목 입력</h3>
-      <input type="text" id="projectPromptInput" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-400 outline-none mb-4" onkeypress="if(event.key==='Enter') confirmProjectPrompt()">
+  <div id="projectPromptModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-violet-100">
+      <h3 id="projectPromptTitle" class="text-base font-bold text-[#38302A] mb-2">프로젝트 제목 입력</h3>
+      <input type="text" id="projectPromptInput" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-violet-400 outline-none mb-4" onkeypress="if(event.key==='Enter') confirmProjectPrompt()">
       <div class="flex justify-end gap-2">
-        <button onclick="closeProjectPromptModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="confirmProjectPrompt()" class="bg-indigo-600 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">확인</button>
+        <button onclick="closeProjectPromptModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="confirmProjectPrompt()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">확인</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Custom Delete Confirmation -->
-  <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center">
-      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-xl mb-3">
+  <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-rose-100 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center text-xl mb-3">
         <i class="fa-solid fa-trash-can"></i>
       </div>
-      <h3 class="text-base font-bold text-slate-900 mb-1">프로젝트 삭제</h3>
-      <p id="deleteConfirmText" class="text-xs text-slate-500 mb-5">정말 이 프로젝트를 삭제하시겠습니까?</p>
+      <h3 class="text-base font-bold text-[#38302A] mb-1">프로젝트 삭제</h3>
+      <p id="deleteConfirmText" class="text-xs text-[#7A6D5D] mb-5">정말 이 프로젝트를 삭제하시겠습니까?</p>
       <div class="flex justify-center gap-2">
-        <button onclick="closeDeleteConfirmModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="executeDeleteProject()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">삭제하기</button>
+        <button onclick="closeDeleteConfirmModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="executeDeleteProject()" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">삭제하기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Teacher PIN Check -->
-  <div id="pinModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center">
-      <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-xl mb-3">
+  <div id="pinModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-100 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center text-xl mb-3">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <h3 class="text-base font-bold text-slate-900 mb-1">교사 인증 PIN 입력</h3>
-      <p class="text-xs text-slate-500 mb-4">선생님 전용 제어 기능입니다.<br>(기본 PIN: <b class="text-indigo-600">1234</b>)</p>
-      
-      <input type="password" id="pinInput" maxlength="6" class="w-full text-center tracking-[0.5em] text-xl font-black bg-slate-50 border-2 border-slate-300 rounded-2xl py-3 outline-none mb-3" placeholder="••••" onkeypress="if(event.key==='Enter') verifyTeacherPin()">
-      
+      <h3 class="text-base font-bold text-[#38302A] mb-1">교사 인증 PIN 입력</h3>
+      <p class="text-xs text-[#7A6D5D] mb-4">선생님 전용 제어 기능입니다.<br>(기본 PIN: <b class="text-violet-600">1234</b>)</p>
+
+      <input type="password" id="pinInput" maxlength="6" class="w-full text-center tracking-[0.5em] text-xl font-black bg-[#FAF8F5] border-2 border-[#DFD5C5] rounded-2xl py-3 outline-none mb-3" placeholder="••••" onkeypress="if(event.key==='Enter') verifyTeacherPin()">
+
       <div id="pinErrorMsg" class="hidden text-rose-500 text-xs font-bold mb-3">PIN 번호가 일치하지 않습니다.</div>
 
       <div class="flex justify-center gap-2">
-        <button onclick="closePinModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="verifyTeacherPin()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">인증</button>
+        <button onclick="closePinModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="verifyTeacherPin()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">인증</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Change PIN -->
-  <div id="changePinModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
-      <h3 class="text-base font-bold text-slate-900 mb-2">교사용 PIN 번호 변경</h3>
+  <div id="changePinModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-100">
+      <h3 class="text-base font-bold text-[#38302A] mb-2">교사용 PIN 번호 변경</h3>
       <div class="space-y-3 mb-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">현재 PIN</label>
-          <input type="password" id="currentPinInput" maxlength="6" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm outline-none">
+          <label class="block text-xs font-bold text-[#554A3E] mb-1">현재 PIN</label>
+          <input type="password" id="currentPinInput" maxlength="6" class="w-full px-3 py-2 bg-[#FAF8F5] border border-[#DFD5C5] rounded-xl text-sm outline-none">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">새로운 PIN</label>
-          <input type="password" id="newPinInput" maxlength="6" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm outline-none">
+          <label class="block text-xs font-bold text-[#554A3E] mb-1">새로운 PIN</label>
+          <input type="password" id="newPinInput" maxlength="6" class="w-full px-3 py-2 bg-[#FAF8F5] border border-[#DFD5C5] rounded-xl text-sm outline-none">
         </div>
       </div>
       <div class="flex justify-end gap-2">
-        <button onclick="closeChangePinModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="saveNewPin()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">저장</button>
+        <button onclick="closeChangePinModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="saveNewPin()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">저장</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Create New Group -->
-  <div id="newGroupModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <h3 class="text-base font-bold text-slate-800 mb-2">새 유목화 바구니(그룹) 만들기</h3>
-      <p class="text-xs text-slate-500 mb-4">비슷한 낱말들을 담을 그룹 이름을 적어주세요.</p>
-      
-      <input type="text" id="newGroupTitleInput" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-400 outline-none mb-4" placeholder="예: 1모둠, 생산자, 실천방안 등" onkeypress="if(event.key==='Enter') saveNewGroup()">
-      
+  <div id="newGroupModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-violet-100">
+      <h3 class="text-base font-bold text-[#38302A] mb-2">새 유목화 바구니(그룹) 만들기</h3>
+      <p class="text-xs text-[#7A6D5D] mb-4">비슷한 낱말들을 묶어 담을 바구니 이름을 적어주세요.</p>
+
+      <input type="text" id="newGroupTitleInput" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-violet-400 outline-none mb-4" placeholder="예: 1모둠, 생산자, 실천방안 등" onkeypress="if(event.key==='Enter') saveNewGroup()">
+
       <div class="flex justify-end gap-2">
-        <button onclick="closeNewGroupModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="saveNewGroup()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">만들기</button>
+        <button onclick="closeNewGroupModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="saveNewGroup()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">만들기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Merge Manager -->
-  <div id="mergeManagerModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+  <div id="mergeManagerModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border-2 border-amber-100 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-3">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+          <div class="w-8 h-8 rounded-xl bg-amber-400 text-white flex items-center justify-center font-bold">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-800">유사 낱말 자동 통합 현황</h3>
-            <p class="text-xs text-slate-500">한국어 조사 및 복수형이 포함된 유사 낱말들이 대표어로 통합됩니다.</p>
+            <h3 class="text-base font-bold text-[#38302A]">유사 낱말 자동 통합 현황</h3>
+            <p class="text-xs text-[#7A6D5D]">한국어 조사 및 복수형이 포함된 유사 낱말들이 대표어로 통합됩니다.</p>
           </div>
         </div>
-        <button onclick="closeMergeManager()" class="text-slate-400 hover:text-slate-600 text-lg p-1">
+        <button onclick="closeMergeManager()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <div id="mergeListContainer" class="flex-1 overflow-y-auto space-y-2 py-2 pr-1"></div>
 
-      <div class="flex justify-end pt-3 border-t border-slate-100 mt-2">
-        <button onclick="closeMergeManager()" class="bg-indigo-600 text-white text-xs font-bold px-5 py-2 rounded-xl">닫기</button>
+      <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
+        <button onclick="closeMergeManager()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl">닫기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Edit Topic -->
-  <div id="topicModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <h3 class="text-base font-bold text-slate-800 mb-2">수업 주제 수정</h3>
-      <input type="text" id="topicInput" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-400 outline-none mb-4">
+  <div id="topicModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-violet-100">
+      <h3 class="text-base font-bold text-[#38302A] mb-2">수업 주제 수정</h3>
+      <input type="text" id="topicInput" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-violet-400 outline-none mb-4">
       <div class="flex justify-end gap-2">
-        <button onclick="closeTopicModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="saveTopic()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">저장</button>
+        <button onclick="closeTopicModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="saveTopic()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">저장</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Word Detail Card -->
-  <div id="wordDetailModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+  <div id="wordDetailModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-violet-100">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-3">
         <div class="flex items-center gap-2">
-          <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-sm">
+          <span class="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-black text-sm">
             <i class="fa-solid fa-tag"></i>
           </span>
-          <h3 id="detailWordTitle" class="text-base font-black text-slate-900">낱말 상세</h3>
+          <h3 id="detailWordTitle" class="text-base font-black text-[#38302A]">낱말 상세</h3>
         </div>
-        <button onclick="closeWordDetailModal()" class="text-slate-400 hover:text-slate-600 p-1">
+        <button onclick="closeWordDetailModal()" class="text-[#A09282] hover:text-[#38302A] p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <div class="space-y-3 text-xs sm:text-sm">
-        <div class="bg-indigo-50 p-3 rounded-2xl flex items-center justify-between">
-          <span class="text-indigo-900 font-bold">총 언급 횟수</span>
-          <span id="detailWordCount" class="text-indigo-700 font-black text-base">0회</span>
+        <div class="bg-violet-50/80 p-3 rounded-2xl flex items-center justify-between">
+          <span class="text-violet-900 font-bold">총 언급 횟수</span>
+          <span id="detailWordCount" class="text-violet-700 font-black text-base">0회</span>
         </div>
         <div>
-          <h4 class="font-bold text-slate-700 mb-1">제출한 학생 (<span id="detailStudentCount">0</span>명):</h4>
-          <div id="detailStudentList" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200"></div>
+          <h4 class="font-bold text-[#554A3E] mb-1">제출한 학생 (<span id="detailStudentCount">0</span>명):</h4>
+          <div id="detailStudentList" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-[#FAF8F5] rounded-2xl border border-[#EAE2D5]"></div>
         </div>
         <div>
-          <h4 class="font-bold text-slate-700 mb-1">통합된 유사 낱말들:</h4>
-          <div id="detailSynonymList" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200"></div>
+          <h4 class="font-bold text-[#554A3E] mb-1">통합된 유사 낱말들:</h4>
+          <div id="detailSynonymList" class="flex flex-wrap gap-1.5 p-2 bg-[#FAF8F5] rounded-2xl border border-[#EAE2D5]"></div>
         </div>
       </div>
 
-      <div class="flex justify-between items-center pt-4 border-t border-slate-100 mt-3">
-        <button id="deleteWordEntireBtn" onclick="deleteEntireWordFromDetail()" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center gap-1">
+      <div class="flex justify-between items-center pt-4 border-t border-[#F0EAE1] mt-3">
+        <button id="deleteWordEntireBtn" onclick="deleteEntireWordFromDetail()" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-2xl font-bold text-xs transition flex items-center gap-1">
           <i class="fa-solid fa-trash-can"></i> <span>이 낱말 전체 삭제</span>
         </button>
-        <button onclick="closeWordDetailModal()" class="bg-indigo-600 text-white text-xs font-bold px-5 py-2 rounded-xl">확인</button>
+        <button onclick="closeWordDetailModal()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl">확인</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Submissions Manager -->
-  <div id="submissionsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+  <div id="submissionsModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border-2 border-rose-100 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0EAE1] mb-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center font-bold">
+          <div class="w-8 h-8 rounded-xl bg-rose-400 text-white flex items-center justify-center font-bold">
             <i class="fa-solid fa-list-check"></i>
           </div>
           <div>
-            <h3 class="text-base font-black text-slate-900">제출된 게시글 관리·삭제</h3>
-            <p class="text-xs text-slate-500">학생이 잘못 올렸거나 부적절한 게시글을 교사가 개별 삭제할 수 있습니다.</p>
+            <h3 class="text-base font-black text-[#38302A]">제출된 게시글 관리·삭제</h3>
+            <p class="text-xs text-[#7A6D5D]">학생이 잘못 올렸거나 부적절한 게시글을 교사가 개별 삭제할 수 있습니다.</p>
           </div>
         </div>
-        <button onclick="closeSubmissionsModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1">
+        <button onclick="closeSubmissionsModal()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <div id="submissionItemsContainer" class="flex-1 overflow-y-auto space-y-2 py-2 pr-1 min-h-[220px]"></div>
 
-      <div class="flex justify-end pt-3 border-t border-slate-100 mt-2">
-        <button onclick="closeSubmissionsModal()" class="bg-slate-800 text-white text-xs font-bold px-5 py-2 rounded-xl">닫기</button>
+      <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
+        <button onclick="closeSubmissionsModal()" class="bg-[#4A4036] text-white text-xs font-bold px-5 py-2 rounded-2xl">닫기</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Reset Board Confirm -->
-  <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center">
-      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-xl mb-3">
+  <div id="resetModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-rose-100 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center text-xl mb-3">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
-      <h3 class="text-base font-bold text-slate-900 mb-1">모든 내용 초기화</h3>
-      <p class="text-xs text-slate-500 mb-5">등록된 모든 학생 제출 단어, 그룹, 판서가 지워집니다.</p>
+      <h3 class="text-base font-bold text-[#38302A] mb-1">모든 내용 초기화</h3>
+      <p class="text-xs text-[#7A6D5D] mb-5">등록된 모든 학생 제출 단어, 그룹, 판서가 지워집니다.</p>
       <div class="flex justify-center gap-2">
-        <button onclick="closeResetModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">취소</button>
-        <button onclick="confirmResetBoard()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-5 py-2 rounded-xl shadow">초기화</button>
+        <button onclick="closeResetModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="confirmResetBoard()" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">초기화</button>
       </div>
     </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toastMessage" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 pointer-events-none transition-all">
+  <div id="toastMessage" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#38302A] text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 pointer-events-none transition-all">
     <i class="fa-solid fa-circle-check text-emerald-400"></i>
     <span id="toastText">알림</span>
   </div>
 
-  <!-- Firebase Modular Module Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA3e7ohYUYz37ZIkP9NRUWEaqoEB5Z_Cu8",
-      authDomain: "wordcloud-yj.firebaseapp.com",
-      projectId: "wordcloud-yj",
-      storageBucket: "wordcloud-yj.firebasestorage.app",
-      messagingSenderId: "954629445830",
-      appId: "1:954629445830:web:f18c73152fc09c8b20dfc7",
-      measurementId: "G-2XN31E57X2"
-    };
-
-    let app = null;
-    let auth = null;
-    let db = null;
-    let currentUser = null;
-    let isCloudLive = false;
-
-    async function initFirebaseCloud() {
-      try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-
-        const cred = await signInAnonymously(auth);
-        currentUser = cred.user;
-        isCloudLive = true;
-        updateCloudStatusBadge(true, "클라우드 연결됨");
-        startFirestoreListeners();
-      } catch (err) {
-        isCloudLive = false;
-        updateCloudStatusBadge(false, "오프라인/로컬");
-      }
-    }
-
-    function updateCloudStatusBadge(connected, text) {
-      const badge = document.getElementById('cloudStatusBadge');
-      const txtEl = document.getElementById('cloudStatusText');
-      if (badge && txtEl) {
-        txtEl.innerText = text;
-        badge.className = connected 
-          ? "bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-lg border border-emerald-200 flex items-center gap-1"
-          : "bg-amber-50 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-lg border border-amber-200 flex items-center gap-1";
-      }
-    }
-
-    function getRoomDocRef(roomCode) {
-      if (!db) return null;
-      return doc(db, 'rooms', roomCode || 'default_room');
-    }
-
-    function startFirestoreListeners() {
-      if (!db || !currentUser || !appState.roomCode) return;
-
-      const roomRef = getRoomDocRef(appState.roomCode);
-      if (roomRef) {
-        onSnapshot(roomRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data && data._lastUpdater !== currentUser.uid) {
-              if (data.topic) {
-                appState.topic = data.topic;
-                syncTopicToUI(data.topic);
-              }
-              if (data.groups) appState.groups = data.groups;
-              if (data.wordPositions) appState.wordPositions = data.wordPositions;
-              if (data.drawings) appState.drawings = data.drawings;
-              if (data.submissions) appState.submissions = data.submissions;
-              if (data.isRevealed !== undefined) {
-                appState.isRevealed = data.isRevealed;
-                updateRevealBtnUI();
-              }
-              if (data.studentRole) {
-                appState.studentRole = data.studentRole;
-                updateTeacherRoleBarUI(data.studentRole);
-                applyStudentModeUI();
-              }
-              if (data.theme) appState.theme = data.theme;
-
-              renderUnifiedBoard();
-            }
-          }
-        }, (error) => {
-          console.warn("Firestore snapshot warning:", error);
-        });
-      }
-    }
-
-    window.syncStateToCloudFirestore = async function() {
-      if (!db || !currentUser || !isCloudLive || !appState.roomCode) return;
-      try {
-        const roomRef = getRoomDocRef(appState.roomCode);
-        if (roomRef) {
-          await setDoc(roomRef, {
-            roomCode: appState.roomCode,
-            topic: appState.topic,
-            theme: appState.theme,
-            isRevealed: appState.isRevealed,
-            studentRole: appState.studentRole,
-            submissions: appState.submissions,
-            groups: appState.groups,
-            wordPositions: appState.wordPositions,
-            drawings: appState.drawings,
-            customMerges: appState.customMerges,
-            lastModified: new Date().toISOString(),
-            _lastUpdater: currentUser.uid
-          }, { merge: true });
-        }
-      } catch (err) {
-        console.warn("Firestore sync warning:", err);
-      }
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initFirebaseCloud();
-    });
-  </script>
-
-  <!-- Core App Logic Script -->
+  <!-- Main Logic Script (Canvas Sandbox-Friendly Standard JS) -->
   <script>
-    let appState = {
-      activeProjectId: 'proj_default',
-      roomCode: '',
-      topic: "오늘의 수업 주제를 입력하세요",
-      theme: 'default',
-      isRevealed: false,
-      studentRole: 'contributor',
-      isTeacherAuthenticated: true,
-      teacherPin: "1234",
-      isStudentView: false,
-      submissions: [],
-      wordPositions: {},
-      groups: [
-        // 상단 타이틀 배너와 겹치지 않도록 기본 y 좌표를 80px로 정돈
-        { id: 'grp_1', title: '1모둠 (또는 그룹 1)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 280, height: 260 },
-        { id: 'grp_2', title: '2모둠 (또는 그룹 2)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 80, width: 280, height: 260 }
-      ],
-      drawings: [],
-      autoMergeEnabled: true,
-      customMerges: {}
+    // Canvas 내장 브라우저 호환 동기화 함수
+    window.syncStateToCloudFirestore = function() {
+      // 로컬 스토리지 기반 실시간 백업 지원
     };
-
-    let selectedDetailWord = null;
-    const STORAGE_KEY = 'edu_wordboard_projects_v5';
-    let projectsDatabase = {};
-    let promptCallback = null;
-    let pendingDeleteProjectId = null;
-    let pendingAction = null;
-
-    let currentTool = 'select';
-    let currentColor = '#1e293b';
-    let isDrawing = false;
-    let activeStroke = null;
-    let currentHoverNodeId = null;
-
-    let broadcastChannel = null;
 
     function generateRoomCode() {
       return String(Math.floor(100000 + Math.random() * 900000));
@@ -901,7 +744,7 @@
 
     function launchConfetti(opts = {}) {
       try {
-        const count = opts.particleCount || 40;
+        const count = opts.particleCount || 45;
         const canvas = document.createElement('canvas');
         canvas.style.position = 'fixed';
         canvas.style.top = '0';
@@ -911,12 +754,12 @@
         canvas.style.pointerEvents = 'none';
         canvas.style.zIndex = '99999';
         document.body.appendChild(canvas);
-        
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         const ctx = canvas.getContext('2d');
         const particles = [];
-        const colors = ['#f43f5e', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#6366f1'];
+        const colors = ['#FDA4AF', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4'];
         const startY = (opts.origin && opts.origin.y) ? canvas.height * opts.origin.y : canvas.height / 2;
 
         for (let i = 0; i < count; i++) {
@@ -998,10 +841,6 @@
       try {
         localStorage.setItem('edu_wb_sync_evt_' + appState.roomCode, JSON.stringify({ ...payload, _t: Date.now() }));
       } catch(e){}
-
-      if (typeof syncStateToCloudFirestore === 'function') {
-        syncStateToCloudFirestore();
-      }
     }
 
     function broadcastSubmission(submissionObj) {
@@ -1018,10 +857,6 @@
       try {
         localStorage.setItem('edu_wb_sync_evt_' + appState.roomCode, JSON.stringify({ ...payload, _t: Date.now() }));
       } catch(e){}
-
-      if (typeof syncStateToCloudFirestore === 'function') {
-        syncStateToCloudFirestore();
-      }
     }
 
     function handleIncomingSyncMessage(data) {
@@ -1070,8 +905,8 @@
       }
 
       const suffixes = [
-        "들이다", "들로", "들을", "들이", "들에", "들의", "에서", 
-        "이다", "으로", "까지", "부터", "하고", "이며", "에는", 
+        "들이다", "들로", "들을", "들이", "들에", "들의", "에서",
+        "이다", "으로", "까지", "부터", "하고", "이며", "에는",
         "들", "은", "는", "이", "가", "을", "를", "의", "에", "로", "와", "과", "도", "만"
       ];
 
@@ -1127,7 +962,7 @@
         const cl = clusters[normKey];
         let bestRep = normKey;
         let maxVarCount = -1;
-        
+
         Object.entries(cl.variants).forEach(([vWord, vCount]) => {
           if (vCount > maxVarCount) {
             maxVarCount = vCount;
@@ -1151,21 +986,58 @@
       return result.sort((a, b) => b.totalCount - a.totalCount);
     }
 
+    // 전역 상태 객체
+    let appState = {
+      activeProjectId: 'proj_default',
+      roomCode: '',
+      topic: "오늘의 수업 주제를 입력하세요",
+      theme: 'default',
+      isRevealed: false,
+      studentRole: 'contributor',
+      isTeacherAuthenticated: true,
+      teacherPin: "1234",
+      isStudentView: false,
+      submissions: [],
+      wordPositions: {},
+      groups: [
+        { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+        { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+      ],
+      drawings: [],
+      autoMergeEnabled: true,
+      customMerges: {}
+    };
+
+    let selectedDetailWord = null;
+    const STORAGE_KEY = 'edu_wordboard_pastel_canvas_v1';
+    let projectsDatabase = {};
+    let promptCallback = null;
+    let pendingDeleteProjectId = null;
+    let pendingAction = null;
+
+    let currentTool = 'select';
+    let currentColor = '#4A4036';
+    let isDrawing = false;
+    let activeStroke = null;
+    let currentHoverNodeId = null;
+    let broadcastChannel = null;
+
+    // 파스텔 테마 팔레트
     const PALETTES = {
       default: [
-        'bg-amber-100 text-amber-950 border-amber-300 shadow-amber-100',
-        'bg-emerald-100 text-emerald-950 border-emerald-300 shadow-emerald-100',
-        'bg-sky-100 text-sky-950 border-sky-300 shadow-sky-100',
-        'bg-violet-100 text-violet-950 border-violet-300 shadow-violet-100',
-        'bg-rose-100 text-rose-950 border-rose-300 shadow-rose-100',
-        'bg-indigo-100 text-indigo-950 border-indigo-300 shadow-indigo-100'
+        'bg-[#FFF5E6] text-[#784A12] border-[#FBDCA8] shadow-amber-100/50',
+        'bg-[#EDF9F0] text-[#1E572D] border-[#C3EDCC] shadow-emerald-100/50',
+        'bg-[#EFF8FF] text-[#1D4F78] border-[#BEDEF8] shadow-sky-100/50',
+        'bg-[#F5F0FF] text-[#552E7A] border-[#DCBEFB] shadow-purple-100/50',
+        'bg-[#FFF0F3] text-[#7A2338] border-[#FBC3CF] shadow-rose-100/50',
+        'bg-[#F0FDF4] text-[#1B5E39] border-[#BBF7D0] shadow-teal-100/50'
       ],
       chalkboard: [
-        'bg-white/95 text-slate-900 border-emerald-300 shadow-md',
-        'bg-yellow-200 text-yellow-950 border-yellow-400 shadow-md',
-        'bg-cyan-200 text-cyan-950 border-cyan-400 shadow-md',
-        'bg-pink-200 text-pink-950 border-pink-400 shadow-md',
-        'bg-lime-200 text-lime-950 border-lime-400 shadow-md'
+        'bg-white/95 text-[#2A241E] border-[#A7F3D0] shadow-md',
+        'bg-[#FEF08A] text-[#713F12] border-[#FDE047] shadow-md',
+        'bg-[#A5F3FC] text-[#164E63] border-[#67E8F9] shadow-md',
+        'bg-[#FBCFE8] text-[#831843] border-[#F472B6] shadow-md',
+        'bg-[#D9F99D] text-[#365314] border-[#BEF264] shadow-md'
       ]
     };
 
@@ -1261,7 +1133,7 @@
 
       const uniqueStudents = new Set(appState.submissions.map(s => s.author || '익명')).size;
       const totalRawWords = appState.submissions.reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
-      
+
       document.getElementById('headerStudentCount').innerText = uniqueStudents;
       document.getElementById('headerRawCount').innerText = totalRawWords;
       document.getElementById('footerStuCount').innerText = uniqueStudents;
@@ -1287,7 +1159,7 @@
       const maxCount = Math.max(...words.map(w => w.totalCount), 1);
       const minCount = Math.min(...words.map(w => w.totalCount), 1);
       const palette = PALETTES[appState.theme] || PALETTES.default;
-      
+
       const canDragAndEdit = !appState.isStudentView || appState.studentRole === 'editor';
       const isTeacher = appState.isTeacherAuthenticated && !appState.isStudentView;
 
@@ -1303,29 +1175,29 @@
         const groupDiv = document.createElement('div');
         groupDiv.id = `group_zone_${grp.id}`;
         groupDiv.dataset.nodeId = `group_${grp.id}`;
-        groupDiv.className = `canvas-item-node interactive-element absolute rounded-3xl p-3 border-2 shadow-sm flex flex-col z-10 ${grp.color}`;
+        groupDiv.className = `canvas-item-node interactive-element absolute rounded-3xl p-3.5 border-2 shadow-sm flex flex-col z-10 ${grp.color}`;
         groupDiv.style.left = `${grp.x}px`;
         groupDiv.style.top = `${grp.y}px`;
         groupDiv.style.width = `${grp.width || 280}px`;
         groupDiv.style.minHeight = `${grp.height || 260}px`;
 
         groupDiv.innerHTML = `
-          <div class="group-drag-handle flex items-center justify-between pb-2 border-b border-black/10 mb-2 ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none">
+          <div class="group-drag-handle flex items-center justify-between pb-2 border-b border-black/8 mb-2 ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none">
             <div class="flex items-center gap-1.5 flex-1 pr-1">
-              <span class="text-slate-400 hover:text-indigo-600 text-xs"><i class="fa-solid fa-grip-vertical"></i></span>
-              <input type="text" value="${grp.title}" onchange="updateGroupTitle('${grp.id}', this.value)" 
-                     class="bg-transparent font-black text-xs sm:text-sm text-slate-800 border-b border-dashed border-transparent hover:border-slate-400 focus:border-indigo-600 focus:bg-white px-1 outline-none w-full"
+              <span class="text-black/30 hover:text-violet-600 text-xs"><i class="fa-solid fa-grip-vertical"></i></span>
+              <input type="text" value="${grp.title}" onchange="updateGroupTitle('${grp.id}', this.value)"
+                     class="bg-transparent font-black text-xs sm:text-sm text-current border-b border-dashed border-transparent hover:border-black/20 focus:border-violet-500 focus:bg-white/80 px-1.5 py-0.5 rounded-lg outline-none w-full"
                      ${canDragAndEdit ? '' : 'readonly'}>
             </div>
-            <span class="group-count-badge text-[11px] font-black bg-white/80 px-2 py-0.5 rounded-full mr-1 shadow-xs">0</span>
+            <span class="group-count-badge text-[11px] font-black bg-white/90 px-2.5 py-0.5 rounded-full mr-1 shadow-2xs border border-black/5">0</span>
             ${canDragAndEdit ? `
-              <button onclick="removeGroup('${grp.id}')" class="text-slate-400 hover:text-rose-600 p-1 text-xs" title="그룹 삭제">
+              <button onclick="removeGroup('${grp.id}')" class="text-black/30 hover:text-rose-600 p-1 text-xs transition" title="그룹 삭제">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             ` : ''}
           </div>
-          <div id="group_items_${grp.id}" class="group-drop-hint flex-1 border-2 border-dashed border-black/10 rounded-2xl p-2 flex flex-wrap content-start gap-1.5 bg-white/40 min-h-[160px] transition-all">
-            <span class="text-[11px] text-slate-400 w-full text-center py-2 select-none pointer-events-none group-empty-label">낱말을 이 안으로 끌어다 넣으세요</span>
+          <div id="group_items_${grp.id}" class="group-drop-hint flex-1 border-2 border-dashed border-black/10 rounded-2xl p-2.5 flex flex-wrap content-start gap-1.5 bg-white/50 min-h-[160px] transition-all">
+            <span class="text-[11px] text-black/35 w-full text-center py-2 select-none pointer-events-none group-empty-label">✨ 단어를 끌어다 넣으세요</span>
           </div>
         `;
 
@@ -1363,23 +1235,23 @@
         if (targetGroupId && groupContainers[targetGroupId]) {
           const countInThisGroup = groupWordCounts[targetGroupId] || 1;
           let nestedFontRem = 0.85;
-          let nestedPadding = "px-2 py-1";
+          let nestedPadding = "px-2.5 py-1";
 
-          if (countInThisGroup > 10) { nestedFontRem = 0.7; nestedPadding = "px-1.5 py-0.5"; }
-          else if (countInThisGroup > 6) { nestedFontRem = 0.75; nestedPadding = "px-2 py-0.5"; }
-          else if (countInThisGroup > 3) { nestedFontRem = 0.8; nestedPadding = "px-2 py-1"; }
+          if (countInThisGroup > 10) { nestedFontRem = 0.72; nestedPadding = "px-1.5 py-0.5"; }
+          else if (countInThisGroup > 6) { nestedFontRem = 0.78; nestedPadding = "px-2 py-0.5"; }
+          else if (countInThisGroup > 3) { nestedFontRem = 0.82; nestedPadding = "px-2 py-1"; }
 
           const nestedChip = document.createElement('div');
           nestedChip.id = `word_badge_${encodeURIComponent(item.representative)}`;
           nestedChip.dataset.nodeId = `word_${item.representative}`;
-          nestedChip.className = `canvas-item-node interactive-element inline-flex items-center gap-1 rounded-xl border font-bold shadow-xs ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none bg-white text-slate-800 hover:border-indigo-400 ${nestedPadding}`;
+          nestedChip.className = `canvas-item-node interactive-element inline-flex items-center gap-1.5 rounded-2xl border-2 border-white/80 font-bold shadow-2xs ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none bg-white text-[#4A4036] hover:border-violet-300 ${nestedPadding}`;
           nestedChip.style.fontSize = `${nestedFontRem}rem`;
 
           nestedChip.innerHTML = `
             <span>${item.representative}</span>
-            <span class="bg-indigo-50 text-indigo-700 text-[10px] font-black px-1 rounded-md">${item.totalCount}</span>
+            <span class="bg-violet-100/70 text-violet-800 text-[10px] font-black px-1.5 py-0.2 rounded-full">${item.totalCount}</span>
             ${isTeacher ? `
-              <button onclick="event.stopPropagation(); deleteEntireWord('${item.representative}')" class="text-slate-300 hover:text-rose-600 p-0.5" title="교사: 단어 삭제">
+              <button onclick="event.stopPropagation(); deleteEntireWord('${item.representative}')" class="text-black/20 hover:text-rose-500 p-0.5" title="교사: 단어 삭제">
                 <i class="fa-solid fa-xmark text-[9px]"></i>
               </button>
             ` : ''}
@@ -1398,21 +1270,21 @@
           const wordBadge = document.createElement('div');
           wordBadge.id = `word_badge_${encodeURIComponent(item.representative)}`;
           wordBadge.dataset.nodeId = `word_${item.representative}`;
-          wordBadge.className = `canvas-item-node interactive-element absolute inline-flex items-center gap-2 rounded-2xl border-2 font-black shadow-md ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none z-20 ${colorClass} ${paddingClass}`;
+          wordBadge.className = `canvas-item-node interactive-element absolute inline-flex items-center gap-2 rounded-2xl border-2 font-black shadow-sm ${canDragAndEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} select-none z-20 ${colorClass} ${paddingClass}`;
           wordBadge.style.fontSize = `${fontSizeRem}rem`;
           wordBadge.style.left = `${pos.x}px`;
           wordBadge.style.top = `${pos.y}px`;
 
           let iconBadge = isTop ? `<span class="text-amber-500 animate-bounce mr-0.5"><i class="fa-solid fa-crown text-xs"></i></span>` : '';
-          let mergedBadge = item.synonyms.length > 1 ? `<span class="bg-indigo-600/15 text-indigo-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">통합 ${item.synonyms.length}</span>` : '';
+          let mergedBadge = item.synonyms.length > 1 ? `<span class="bg-white/80 text-violet-900 text-[10px] px-2 py-0.5 rounded-full font-bold border border-violet-100">통합 ${item.synonyms.length}</span>` : '';
 
           wordBadge.innerHTML = `
             ${iconBadge}
             <span class="tracking-tight">${item.representative}</span>
-            <span class="bg-black/10 rounded-full px-2 py-0.5 text-xs font-black">${item.totalCount}</span>
+            <span class="bg-black/8 rounded-full px-2 py-0.5 text-xs font-black">${item.totalCount}</span>
             ${mergedBadge}
             ${isTeacher ? `
-              <button onclick="event.stopPropagation(); deleteEntireWord('${item.representative}')" class="text-black/30 hover:text-rose-600 p-0.5 ml-0.5" title="교사: 단어 삭제">
+              <button onclick="event.stopPropagation(); deleteEntireWord('${item.representative}')" class="text-black/20 hover:text-rose-600 p-0.5 ml-0.5 transition" title="교사: 단어 삭제">
                 <i class="fa-solid fa-xmark text-xs"></i>
               </button>
             ` : ''}
@@ -1485,7 +1357,7 @@
           const newY = Math.max(10, origY + dy);
           element.style.left = `${newX}px`;
           element.style.top = `${newY}px`;
-          
+
           if (!appState.wordPositions[wordKey]) appState.wordPositions[wordKey] = {};
           appState.wordPositions[wordKey].x = newX;
           appState.wordPositions[wordKey].y = newY;
@@ -1607,17 +1479,17 @@
       const trap = document.getElementById('drawingEventTrap');
 
       [btnSelect, btnPen, btnHighlighter, btnArrow].forEach(b => {
-        if (b) b.className = "px-2.5 py-1 rounded-lg font-bold transition text-slate-600 hover:text-indigo-600 flex items-center gap-1";
+        if (b) b.className = "px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5";
       });
 
       if (tool === 'select') {
-        if (btnSelect) btnSelect.className = "px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1";
+        if (btnSelect) btnSelect.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
         if (trap) trap.classList.add('hidden');
       } else {
         if (trap) trap.classList.remove('hidden');
-        if (tool === 'pen' && btnPen) btnPen.className = "px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1";
-        if (tool === 'highlighter' && btnHighlighter) btnHighlighter.className = "px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1";
-        if (tool === 'arrow' && btnArrow) btnArrow.className = "px-2.5 py-1 rounded-lg font-black transition bg-white text-indigo-600 shadow-xs flex items-center gap-1";
+        if (tool === 'pen' && btnPen) btnPen.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
+        if (tool === 'highlighter' && btnHighlighter) btnHighlighter.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
+        if (tool === 'arrow' && btnArrow) btnArrow.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
       }
 
       playPopSound(500);
@@ -1627,9 +1499,9 @@
       currentColor = hex;
       document.querySelectorAll('.color-pick-btn').forEach(btn => {
         if (btn.dataset.color === hex) {
-          btn.classList.add('ring-2', 'ring-indigo-500');
+          btn.classList.add('ring-2', 'ring-violet-400');
         } else {
-          btn.classList.remove('ring-2', 'ring-indigo-500');
+          btn.classList.remove('ring-2', 'ring-violet-400');
         }
       });
       if (currentTool === 'select') setBoardTool('pen');
@@ -1785,7 +1657,7 @@
             const midY = (startPt.y + endPt.y) / 2;
 
             const delBtn = document.createElement('button');
-            delBtn.className = "arrow-del-btn pointer-events-auto absolute w-5 h-5 rounded-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-300 hover:border-rose-400 shadow-md flex items-center justify-center text-[10px] font-bold z-30";
+            delBtn.className = "arrow-del-btn pointer-events-auto absolute w-5 h-5 rounded-full bg-white hover:bg-rose-50 text-[#A09282] hover:text-rose-500 border border-[#DFD5C5] hover:border-rose-300 shadow-md flex items-center justify-center text-[10px] font-bold z-30";
             delBtn.style.left = `${midX}px`;
             delBtn.style.top = `${midY}px`;
             delBtn.title = "화살표 삭제";
@@ -1812,7 +1684,7 @@
     function drawArrowOnContext(ctx, fromX, fromY, toX, toY, color, width = 3) {
       const headlen = 15;
       const angle = Math.atan2(toY - fromY, toX - fromX);
-      
+
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.lineWidth = width;
@@ -1867,22 +1739,22 @@
       container.innerHTML = '';
 
       if (appState.submissions.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs font-bold">제출된 게시글이 없습니다.</div>`;
+        container.innerHTML = `<div class="text-center py-10 text-[#9E9080] text-xs font-bold">제출된 게시글이 없습니다.</div>`;
         return;
       }
 
       appState.submissions.forEach((sub) => {
         const card = document.createElement('div');
-        card.className = "bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between gap-3";
+        card.className = "bg-[#FAF8F5] p-3 rounded-2xl border border-[#EAE2D5] flex items-center justify-between gap-3";
         card.innerHTML = `
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-black px-2 py-0.5 rounded-lg">${sub.author || '익명'}</span>
-              <span class="text-[11px] text-slate-400 font-medium">${sub.timestamp ? new Date(sub.timestamp).toLocaleTimeString() : ''}</span>
+              <span class="bg-violet-100 text-violet-800 text-xs font-black px-2.5 py-0.5 rounded-full">${sub.author || '익명'}</span>
+              <span class="text-[11px] text-[#A09282] font-medium">${sub.timestamp ? new Date(sub.timestamp).toLocaleTimeString() : ''}</span>
             </div>
-            <p class="text-xs text-slate-700 font-bold truncate">${sub.rawText}</p>
+            <p class="text-xs text-[#554A3E] font-bold truncate">${sub.rawText}</p>
           </div>
-          <button onclick="deleteSingleSubmission('${sub.id}')" class="text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200 p-2 rounded-xl transition text-xs flex items-center gap-1 font-bold" title="게시글 삭제">
+          <button onclick="deleteSingleSubmission('${sub.id}')" class="text-[#A09282] hover:text-rose-600 bg-white hover:bg-rose-50 border border-[#DFD5C5] p-2 rounded-xl transition text-xs flex items-center gap-1 font-bold" title="게시글 삭제">
             <i class="fa-solid fa-trash-can"></i> 삭제
           </button>
         `;
@@ -1936,11 +1808,11 @@
       document.getElementById('detailWordTitle').innerText = item.representative;
       document.getElementById('detailWordCount').innerText = `${item.totalCount}회`;
       document.getElementById('detailStudentCount').innerText = item.students.length;
-      document.getElementById('detailStudentList').innerHTML = item.students.map(s => 
-        `<span class="bg-indigo-50 text-indigo-800 text-xs px-2 py-1 rounded-lg font-bold border border-indigo-200">${s}</span>`
+      document.getElementById('detailStudentList').innerHTML = item.students.map(s =>
+        `<span class="bg-violet-50 text-violet-800 text-xs px-2.5 py-1 rounded-xl font-bold border border-violet-200">${s}</span>`
       ).join('');
-      document.getElementById('detailSynonymList').innerHTML = item.synonyms.map(s => 
-        `<span class="bg-white text-slate-700 text-xs px-2 py-1 rounded-lg font-bold border border-slate-200">${s.word} <b class="text-indigo-600">(${s.count})</b></span>`
+      document.getElementById('detailSynonymList').innerHTML = item.synonyms.map(s =>
+        `<span class="bg-white text-[#554A3E] text-xs px-2.5 py-1 rounded-xl font-bold border border-[#EAE2D5]">${s.word} <b class="text-violet-600">(${s.count})</b></span>`
       ).join('');
 
       const delBtn = document.getElementById('deleteWordEntireBtn');
@@ -1952,8 +1824,8 @@
 
       document.getElementById('wordDetailModal').classList.remove('hidden');
     }
-    function closeWordDetailModal() { 
-      document.getElementById('wordDetailModal').classList.add('hidden'); 
+    function closeWordDetailModal() {
+      document.getElementById('wordDetailModal').classList.add('hidden');
       selectedDetailWord = null;
     }
 
@@ -1972,12 +1844,12 @@
       if (!title) return;
 
       const colors = [
-        'bg-blue-50/90 border-blue-300 text-blue-950',
-        'bg-rose-50/90 border-rose-300 text-rose-950',
-        'bg-emerald-50/90 border-emerald-300 text-emerald-950',
-        'bg-amber-50/90 border-amber-300 text-amber-950',
-        'bg-purple-50/90 border-purple-300 text-purple-950',
-        'bg-teal-50/90 border-teal-300 text-teal-950'
+        'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]',
+        'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]',
+        'bg-[#FFF0F3] border-[#FBC3CF] text-[#7A2338]',
+        'bg-[#EFF8FF] border-[#BEDEF8] text-[#1D4F78]',
+        'bg-[#F5F0FF] border-[#DCBEFB] text-[#552E7A]',
+        'bg-[#FFF5EB] border-[#FCD5B5] text-[#7A3F14]'
       ];
 
       const newId = 'grp_' + Date.now();
@@ -2156,6 +2028,38 @@
       }
     }
 
+    function openChangePinModal() {
+      toggleMenu(false);
+      requireTeacherAuth(() => {
+        document.getElementById('currentPinInput').value = '';
+        document.getElementById('newPinInput').value = '';
+        document.getElementById('changePinModal').classList.remove('hidden');
+      });
+    }
+
+    function closeChangePinModal() {
+      document.getElementById('changePinModal').classList.add('hidden');
+    }
+
+    function saveNewPin() {
+      const current = document.getElementById('currentPinInput').value.trim();
+      const next = document.getElementById('newPinInput').value.trim();
+
+      if (current !== appState.teacherPin) {
+        showToast("현재 PIN이 일치하지 않습니다.");
+        return;
+      }
+      if (!next) {
+        showToast("새로운 PIN을 입력해주세요.");
+        return;
+      }
+
+      appState.teacherPin = next;
+      autoSaveActiveProject();
+      closeChangePinModal();
+      showToast("교사 PIN이 변경되었습니다.");
+    }
+
     function toggleTeacherLock() {
       if (appState.isTeacherAuthenticated) {
         appState.isTeacherAuthenticated = false;
@@ -2173,13 +2077,13 @@
       if (!btn) return;
 
       if (appState.isTeacherAuthenticated) {
-        btn.className = "bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5";
-        icon.className = "fa-solid fa-lock-open";
-        text.innerText = "교사 인증됨";
+        btn.className = "bg-[#EFE9DF] hover:bg-[#E5DDCF] text-[#554A3E] text-xs font-bold px-3 py-1.5 rounded-2xl border border-[#DFD5C5] transition flex items-center gap-1.5";
+        icon.className = "fa-solid fa-lock-open text-amber-600";
+        text.innerText = "교사 모드";
       } else {
-        btn.className = "bg-slate-700 hover:bg-slate-800 text-slate-200 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5";
-        icon.className = "fa-solid fa-lock";
-        text.innerText = "교사 잠금 중";
+        btn.className = "bg-[#554A3E] hover:bg-[#38302A] text-white text-xs font-bold px-3 py-1.5 rounded-2xl shadow-xs transition flex items-center gap-1.5";
+        icon.className = "fa-solid fa-lock text-amber-300";
+        text.innerText = "잠금 상태";
       }
     }
 
@@ -2200,12 +2104,12 @@
       if (!bViewer || !bCont || !bEdit) return;
 
       [bViewer, bCont, bEdit].forEach(b => {
-        b.className = "px-2 py-0.5 rounded text-[11px] text-slate-500 hover:text-slate-900";
+        b.className = "px-2.5 py-0.5 rounded-xl text-[11px] text-[#8B7C6B] hover:text-[#38302A]";
       });
 
-      if (role === 'viewer') bViewer.className = "px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-900 font-bold";
-      else if (role === 'contributor') bCont.className = "px-2 py-0.5 rounded text-[11px] bg-indigo-50 text-indigo-700 font-bold";
-      else bEdit.className = "px-2 py-0.5 rounded text-[11px] bg-purple-50 text-purple-700 font-bold";
+      if (role === 'viewer') bViewer.className = "px-2.5 py-0.5 rounded-xl text-[11px] bg-[#EFE9DF] text-[#4A4036] font-black";
+      else if (role === 'contributor') bCont.className = "px-2.5 py-0.5 rounded-xl text-[11px] bg-violet-100 text-violet-800 font-black";
+      else bEdit.className = "px-2.5 py-0.5 rounded-xl text-[11px] bg-purple-100 text-purple-800 font-black";
     }
 
     function toggleResultReveal() {
@@ -2234,11 +2138,11 @@
       if (!btn) return;
 
       if (appState.isRevealed) {
-        btn.className = "teacher-only bg-slate-800 hover:bg-slate-900 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5";
-        icon.className = "fa-solid fa-eye-slash";
+        btn.className = "teacher-only bg-[#4A4036] hover:bg-[#38302A] text-white text-xs font-black px-3.5 py-1.5 rounded-2xl shadow-sm transition flex items-center gap-1.5";
+        icon.className = "fa-solid fa-eye-slash text-rose-300";
         text.innerText = "결과 숨김";
       } else {
-        btn.className = "teacher-only bg-rose-600 hover:bg-rose-700 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5 animate-pulse";
+        btn.className = "teacher-only bg-rose-400 hover:bg-rose-500 text-white text-xs font-black px-3.5 py-1.5 rounded-2xl shadow-sm shadow-rose-200 transition flex items-center gap-1.5 animate-pulse";
         icon.className = "fa-solid fa-eye";
         text.innerText = "결과 공개";
       }
@@ -2283,7 +2187,7 @@
           value: studentUrl,
           size: 200,
           level: 'M',
-          foreground: '#1e1b4b',
+          foreground: '#4A4036',
           background: '#ffffff'
         });
       }
@@ -2338,7 +2242,7 @@
         if (roleBar) roleBar.classList.add('hidden');
         if (roleIndicator) roleIndicator.classList.remove('hidden');
 
-        const roleLabels = { viewer: '뷰어 (읽기 전용)', contributor: '작성자 (생각 제출 가능)', editor: '편집자 (자유 배치/이동)' };
+        const roleLabels = { viewer: '뷰어 (읽기 전용)', contributor: '작성자 (생각 쓰기 가능)', editor: '편집자 (자유롭게 옮기기)' };
         if (roleText) roleText.innerText = roleLabels[appState.studentRole] || '작성자';
 
         if (appState.studentRole === 'viewer') {
@@ -2381,24 +2285,24 @@
       ctx.scale(dpr, dpr);
 
       const isDark = appState.theme === 'chalkboard';
-      ctx.fillStyle = isDark ? '#173223' : '#f8fafc';
+      ctx.fillStyle = isDark ? '#173724' : '#FAF8F5';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = isDark ? '#5a3d28' : '#e2e8f0';
+      ctx.strokeStyle = isDark ? '#5a3d28' : '#E8DFCFA';
       ctx.lineWidth = 10;
       ctx.strokeRect(10, 10, width - 20, height - 20);
 
-      ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.fillStyle = isDark ? '#ffffff' : '#38302A';
       ctx.font = 'bold 28px "Noto Sans KR", sans-serif';
       ctx.fillText(`우리 반 생각나눔 & 유목화: ${appState.topic}`, 40, 60);
 
       const today = new Date();
       const dateStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
       ctx.font = '15px "Noto Sans KR", sans-serif';
-      ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx.fillStyle = isDark ? '#94a3b8' : '#7A6D5D';
       ctx.fillText(`수업 기록일: ${dateStr} | 참여 학생 ${document.getElementById('headerStudentCount').innerText}명 (코드: ${appState.roomCode})`, 40, 90);
 
-      ctx.strokeStyle = isDark ? '#334155' : '#cbd5e1';
+      ctx.strokeStyle = isDark ? '#334155' : '#E0D7C9';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(40, 110);
@@ -2407,14 +2311,14 @@
 
       appState.groups.forEach(grp => {
         ctx.fillStyle = isDark ? '#1e293b' : '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
+        ctx.strokeStyle = '#D8CEBE';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(grp.x, grp.y + 110, grp.width || 280, grp.height || 260, 20);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
+        ctx.fillStyle = isDark ? '#ffffff' : '#38302A';
         ctx.font = 'bold 16px "Noto Sans KR", sans-serif';
         ctx.fillText(grp.title, grp.x + 16, grp.y + 140);
 
@@ -2433,14 +2337,14 @@
             chipY += 30;
           }
 
-          ctx.fillStyle = isDark ? '#334155' : '#f1f5f9';
-          ctx.strokeStyle = '#cbd5e1';
+          ctx.fillStyle = isDark ? '#334155' : '#F5EFE6';
+          ctx.strokeStyle = '#E0D7C9';
           ctx.beginPath();
           ctx.roundRect(chipX, chipY, cW, cH, 8);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.fillStyle = isDark ? '#ffffff' : '#38302A';
           ctx.fillText(t, chipX + 8, chipY + 16);
           chipX += cW + 8;
         });
@@ -2462,15 +2366,15 @@
         const badgeW = textMetrics.width + 30;
         const badgeH = fontSize + 20;
 
-        ctx.fillStyle = isDark ? '#334155' : '#fef3c7';
-        ctx.strokeStyle = isDark ? '#64748b' : '#fcd34d';
+        ctx.fillStyle = isDark ? '#334155' : '#FFF5E6';
+        ctx.strokeStyle = isDark ? '#64748b' : '#FBDCA8';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(pos.x, pos.y + 110, badgeW, badgeH, 14);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isDark ? '#ffffff' : '#78350f';
+        ctx.fillStyle = isDark ? '#ffffff' : '#784A12';
         ctx.fillText(text, pos.x + 15, pos.y + 110 + badgeH - (badgeH - fontSize)/1.6);
       });
 
@@ -2569,10 +2473,6 @@
       p.customMerges = appState.customMerges;
       p.lastModified = new Date().toISOString();
       saveDatabaseToStorage();
-
-      if (typeof syncStateToCloudFirestore === 'function') {
-        syncStateToCloudFirestore();
-      }
     }
 
     function updateActiveProjectBadge() {
@@ -2595,7 +2495,7 @@
       list.innerHTML = '';
       const keys = Object.keys(projectsDatabase);
       if (keys.length === 0) {
-        list.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">저장된 프로젝트가 없습니다.</div>`;
+        list.innerHTML = `<div class="text-center py-8 text-[#A09282] text-xs">저장된 프로젝트가 없습니다.</div>`;
         return;
       }
 
@@ -2606,23 +2506,23 @@
         const totalWords = (proj.submissions || []).reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
 
         const card = document.createElement('div');
-        card.className = `p-3 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${isActive ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 hover:bg-slate-100 border-slate-200'}`;
+        card.className = `p-3.5 rounded-3xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${isActive ? 'bg-violet-50 border-violet-300 ring-2 ring-violet-200' : 'bg-[#FAF8F5] hover:bg-[#F5EFE6] border-[#EAE2D5]'}`;
         card.innerHTML = `
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-0.5">
-              <span class="font-black text-slate-900 text-sm truncate">${proj.name}</span>
-              ${isActive ? '<span class="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">진행 중</span>' : ''}
+              <span class="font-black text-[#38302A] text-sm truncate">${proj.name}</span>
+              ${isActive ? '<span class="bg-violet-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">진행 중</span>' : ''}
             </div>
-            <p class="text-xs text-slate-600 font-bold mb-1 truncate">주제: <span class="text-indigo-700">${proj.topic}</span></p>
-            <div class="text-[11px] text-slate-500 font-medium">
+            <p class="text-xs text-[#6B5E4E] font-bold mb-1 truncate">주제: <span class="text-violet-700">${proj.topic}</span></p>
+            <div class="text-[11px] text-[#8C7D6C] font-medium">
               <span>코드: ${proj.roomCode || '---'}</span> • <span>${studentCount}명 참여</span> • <span>${totalWords}개 단어</span>
             </div>
           </div>
           <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end">
             ${!isActive ? `
-              <button onclick="loadProject('${proj.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition">불러오기</button>
+              <button onclick="loadProject('${proj.id}')" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-2xl shadow-2xs transition">불러오기</button>
             ` : ''}
-            <button onclick="deleteProject('${proj.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="deleteProject('${proj.id}')" class="text-[#A09282] hover:text-rose-600 p-2 text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
           </div>
         `;
         list.appendChild(card);
@@ -2663,8 +2563,8 @@
             submissions: [],
             wordPositions: {},
             groups: [
-              { id: 'grp_1', title: '1모둠', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 280, height: 260 },
-              { id: 'grp_2', title: '2모둠', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 340, y: 80, width: 280, height: 260 }
+              { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+              { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
             ],
             drawings: [],
             customMerges: {},
@@ -2787,9 +2687,9 @@
           { id: '6', author: '6번', rawText: '생물, 메뚜기, 개구리, 뱀, 세균', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 30, y: 80, width: 270, height: 250 },
-          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 330, y: 80, width: 270, height: 250 },
-          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-purple-50/90 border-purple-300 text-purple-950', x: 630, y: 80, width: 270, height: 250 }
+          { id: 'grp_1', title: '생산자 (식물류)', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 270, height: 250 },
+          { id: 'grp_2', title: '소비자 (동물/곤충류)', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 330, y: 80, width: 270, height: 250 },
+          { id: 'grp_3', title: '분해자 (균류/세균)', color: 'bg-[#F5F0FF] border-[#DCBEFB] text-[#552E7A]', x: 630, y: 80, width: 270, height: 250 }
         ];
       } else if (type === 'env') {
         appState.topic = "지구를 지키는 환경 보호 실천";
@@ -2799,8 +2699,8 @@
           { id: '3', author: '3번', rawText: '플라스틱 안쓰기, 텀블러, 대중교통 이용', timestamp: new Date().toISOString() }
         ];
         appState.groups = [
-          { id: 'grp_1', title: '에너지 절약', color: 'bg-amber-50/90 border-amber-300 text-amber-950', x: 40, y: 80, width: 280, height: 250 },
-          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-emerald-50/90 border-emerald-300 text-emerald-950', x: 350, y: 80, width: 280, height: 250 }
+          { id: 'grp_1', title: '에너지 절약', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 40, y: 80, width: 280, height: 250 },
+          { id: 'grp_2', title: '쓰레기 줄이기', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 350, y: 80, width: 280, height: 250 }
         ];
       }
 
@@ -2819,12 +2719,12 @@
       if (appState.theme === 'chalkboard') {
         board.className = "flex-1 chalk-grid-bg rounded-3xl border-4 border-amber-950 shadow-xl relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-emerald-400/60 hover:border-yellow-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg border-2 border-emerald-400/60 hover:border-yellow-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
         }
       } else {
-        board.className = "flex-1 dot-grid-bg rounded-3xl border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
+        board.className = "flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group flex items-center gap-2.5 sm:gap-3.5 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-3xl shadow-xl hover:shadow-2xl border-2 border-white/40 hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
         }
       }
       renderUnifiedBoard();
@@ -2854,17 +2754,17 @@
       const words = calculateWordFrequencies();
       list.innerHTML = '';
       if (words.length === 0) {
-        list.innerHTML = `<p class="text-center text-slate-400 py-6 text-xs">등록된 단어가 없습니다.</p>`;
+        list.innerHTML = `<p class="text-center text-[#A09282] py-6 text-xs">등록된 단어가 없습니다.</p>`;
       } else {
         words.forEach(w => {
           const row = document.createElement('div');
-          row.className = "bg-slate-50 p-2.5 rounded-2xl border border-slate-200 flex items-center justify-between gap-2";
+          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center justify-between gap-2";
           row.innerHTML = `
             <div>
-              <span class="text-xs font-black text-slate-900">대표어: ${w.representative}</span>
-              <span class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
+              <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
+              <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
             </div>
-            <div class="text-[11px] text-slate-500 font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
+            <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
           `;
           list.appendChild(row);
         });
