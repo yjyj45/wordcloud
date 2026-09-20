@@ -158,11 +158,7 @@
             <i class="fa-solid fa-camera text-sky-600"></i> <span>JPG 저장</span>
           </button>
 
-          <button id="btnSwitchToTeacher" onclick="switchToTeacherModeDirect()" class="student-only hidden bg-[#4A4036] hover:bg-[#38302A] text-white text-xs font-bold px-3 py-1.5 rounded-2xl transition flex items-center gap-1">
-            <i class="fa-solid fa-key text-amber-300"></i> <span>교사 전환</span>
-          </button>
-
-          <div class="relative teacher-only" id="moreMenuContainer">
+<div class="relative teacher-only" id="moreMenuContainer">
             <button onclick="toggleMenu()" class="p-1.5 text-[#7C6E5E] hover:text-[#38302A] bg-[#F7F2EA] hover:bg-[#EFE9DF] rounded-2xl border border-[#E8DFCFA]">
               <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
@@ -266,6 +262,49 @@
 
     <!-- MAIN WORKSPACE -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-3 flex flex-col min-h-0 relative">
+
+      <!-- STUDENT TOP PANEL: always-visible topic + inline submission form -->
+      <div id="studentTopPanel" class="student-only hidden mb-2 sm:mb-3 flex-shrink-0">
+        <div class="bg-white rounded-3xl border-2 border-violet-100 shadow-sm p-4 sm:p-5">
+          <div class="flex items-center gap-2.5 mb-1">
+            <span class="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-500 to-pink-400 text-white flex items-center justify-center text-sm shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-star"></i>
+            </span>
+            <div class="min-w-0">
+              <p class="text-[10px] font-black uppercase tracking-wider text-violet-500">🌱 오늘 배울 핵심 주제</p>
+              <h2 id="studentPanelTopicText" class="text-base sm:text-lg font-black text-[#38302A] truncate">오늘의 수업 주제를 입력하세요</h2>
+            </div>
+          </div>
+
+          <div id="studentPanelFormWrapper" class="pt-3 mt-2 border-t border-[#F0EAE1] space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="sm:w-40">
+                <label class="block text-xs font-bold text-[#554A3E] mb-1">학생 번호</label>
+                <div class="relative flex items-center">
+                  <input type="text" inputmode="numeric" pattern="[0-9]*" id="studentPanelNumber" placeholder="예: 1, 3, 24"
+                         oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                         class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none font-bold">
+                  <span class="absolute right-3.5 text-xs font-black text-[#9E9080] pointer-events-none">번</span>
+                </div>
+              </div>
+              <div class="flex-1">
+                <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
+                <input type="text" id="studentPanelWords" placeholder="예: 개구리, 참나무, 버섯, 벼"
+                       onkeypress="if(event.key==='Enter') submitStudentPanelWords()"
+                       class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none">
+              </div>
+            </div>
+            <button onclick="submitStudentPanelWords()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl shadow-sm shadow-teal-200 transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-paper-plane text-yellow-200"></i> <span>제출하기</span>
+            </button>
+            <p class="text-[11px] text-[#9E9080]">💡 같은 번호로 다시 제출하면 이전 내용이 <b>자동 수정(덮어쓰기)</b>됩니다.</p>
+          </div>
+
+          <div id="studentPanelViewerMsg" class="hidden pt-3 mt-2 border-t border-[#F0EAE1] text-xs text-[#9E9080] text-center">
+            현재 뷰어 권한이라 제출할 수 없어요. 선생님이 결과를 공개하면 아래에서 볼 수 있어요.
+          </div>
+        </div>
+      </div>
 
       <div id="boardContainer" class="flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
 
@@ -506,6 +545,22 @@
       <div class="flex justify-end gap-2">
         <button onclick="closeProjectPromptModal()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
         <button onclick="confirmProjectPrompt()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl shadow">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: New Project PIN Setup -->
+  <div id="newProjectPinModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-100 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center text-xl mb-3">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <h3 class="text-base font-bold text-[#38302A] mb-1">이 프로젝트의 교사 PIN 설정</h3>
+      <p class="text-xs text-[#7A6D5D] mb-4">결과 공개, 삭제 등 교사 기능을 쓸 때 필요해요.<br>나중에 "교사 PIN 변경"에서 바꿀 수 있어요.</p>
+      <input type="password" id="newProjectPinInput" maxlength="6" class="w-full text-center tracking-[0.5em] text-xl font-black bg-[#FAF8F5] border-2 border-[#DFD5C5] rounded-2xl py-3 outline-none mb-4" placeholder="••••" onkeypress="if(event.key==='Enter') confirmNewProjectPin()">
+      <div class="flex justify-center gap-2">
+        <button onclick="cancelNewProjectPin()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
+        <button onclick="confirmNewProjectPin()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl shadow">설정하고 보드 열기</button>
       </div>
     </div>
   </div>
@@ -865,8 +920,10 @@
     function syncTopicToUI(topicStr) {
       const hTopic = document.getElementById('displayTopic');
       const bTopic = document.getElementById('boardCenterTopicText');
+      const sTopic = document.getElementById('studentPanelTopicText');
       if (hTopic) hTopic.innerText = topicStr;
       if (bTopic) bTopic.innerText = topicStr;
+      if (sTopic) sTopic.innerText = topicStr;
     }
 
     let audioCtx = null;
@@ -1138,7 +1195,7 @@
 
     // 전역 상태 객체
     let appState = {
-      activeProjectId: 'proj_default',
+      activeProjectId: '',
       roomCode: '',
       topic: "오늘의 수업 주제를 입력하세요",
       theme: 'default',
@@ -2088,17 +2145,14 @@
       document.getElementById('studentModal').classList.add('hidden');
     }
 
-    function submitModalWords() {
-      const rawNum = document.getElementById('modalStudentNumber').value.trim();
-      const words = document.getElementById('modalStudentWords').value.trim();
-
+    function performStudentSubmission(rawNum, words) {
       if (!rawNum) {
         alert("학생 번호(숫자)를 입력해주세요!");
-        return;
+        return false;
       }
       if (!words) {
         alert("생각 낱말을 입력해주세요!");
-        return;
+        return false;
       }
 
       const formattedAuthor = `${rawNum}번`;
@@ -2121,25 +2175,35 @@
 
       broadcastSubmission(subObj);
 
-      document.getElementById('modalStudentWords').value = '';
-      closeStudentModal();
       renderUnifiedBoard();
       autoSaveActiveProject();
       playPopSound(580);
       launchConfetti({ particleCount: 30, origin: { y: 0.6 } });
 
       showToast(isUpdate ? `${formattedAuthor} 학생의 생각이 수정·반영되었습니다!` : `${formattedAuthor} 학생의 생각이 등록되었습니다!`);
+      return true;
     }
 
-    function switchToTeacherModeDirect() {
-      openPinModal();
-      pendingAction = () => {
-        appState.isStudentView = false;
-        applyStudentModeUI();
-        renderUnifiedBoard();
-        showToast("교사 전용 스마트보드로 전환되었습니다.");
-      };
+    function submitModalWords() {
+      const rawNum = document.getElementById('modalStudentNumber').value.trim();
+      const words = document.getElementById('modalStudentWords').value.trim();
+
+      if (performStudentSubmission(rawNum, words)) {
+        document.getElementById('modalStudentWords').value = '';
+        closeStudentModal();
+      }
     }
+
+    function submitStudentPanelWords() {
+      const rawNum = document.getElementById('studentPanelNumber').value.trim();
+      const words = document.getElementById('studentPanelWords').value.trim();
+
+      if (performStudentSubmission(rawNum, words)) {
+        document.getElementById('studentPanelNumber').value = '';
+        document.getElementById('studentPanelWords').value = '';
+      }
+    }
+
 
     function requireTeacherAuth(callback) {
       if (appState.isTeacherAuthenticated) {
@@ -2383,33 +2447,33 @@
       const groupAddBtn = document.getElementById('btnAddNewGroup');
       const autoCatBtn = document.getElementById('btnAutoCategorize');
       const submitBtn = document.getElementById('btnOpenSubmitModal');
-      const overlaySubmitBtn = document.getElementById('overlaySubmitBtn');
       const roleText = document.getElementById('studentRoleIndicatorText');
       const roleIndicator = document.getElementById('studentRoleIndicator');
+      const panelForm = document.getElementById('studentPanelFormWrapper');
+      const panelViewerMsg = document.getElementById('studentPanelViewerMsg');
+      const overlaySubmitBtn = document.getElementById('overlaySubmitBtn');
 
       if (appState.isStudentView) {
         teacherEls.forEach(el => el.classList.add('hidden'));
         studentEls.forEach(el => el.classList.remove('hidden'));
         if (roleBar) roleBar.classList.add('hidden');
         if (roleIndicator) roleIndicator.classList.remove('hidden');
+        if (submitBtn) submitBtn.classList.add('hidden');
+        if (overlaySubmitBtn) overlaySubmitBtn.classList.add('hidden');
 
         const roleLabels = { viewer: '뷰어 (읽기 전용)', contributor: '작성자 (생각 쓰기 가능)', editor: '편집자 (자유롭게 옮기기)' };
         if (roleText) roleText.innerText = roleLabels[appState.studentRole] || '작성자';
 
-        if (appState.studentRole === 'viewer') {
-          if (toolbarRow) toolbarRow.classList.add('hidden');
-          if (submitBtn) submitBtn.classList.add('opacity-40', 'pointer-events-none');
-          if (overlaySubmitBtn) overlaySubmitBtn.classList.add('hidden');
-        } else if (appState.studentRole === 'contributor') {
-          if (toolbarRow) toolbarRow.classList.add('hidden');
-          if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
-          if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
-        } else if (appState.studentRole === 'editor') {
+        const canSubmit = appState.studentRole !== 'viewer';
+        if (panelForm) panelForm.classList.toggle('hidden', !canSubmit);
+        if (panelViewerMsg) panelViewerMsg.classList.toggle('hidden', canSubmit);
+
+        if (appState.studentRole === 'editor') {
           if (toolbarRow) toolbarRow.classList.remove('hidden');
-          if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
-          if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
           if (groupAddBtn) groupAddBtn.classList.remove('hidden');
           if (autoCatBtn) autoCatBtn.classList.remove('hidden');
+        } else {
+          if (toolbarRow) toolbarRow.classList.add('hidden');
         }
       } else {
         teacherEls.forEach(el => el.classList.remove('hidden'));
@@ -2418,7 +2482,7 @@
         if (toolbarRow) toolbarRow.classList.remove('hidden');
         if (groupAddBtn) groupAddBtn.classList.remove('hidden');
         if (autoCatBtn) autoCatBtn.classList.remove('hidden');
-        if (submitBtn) submitBtn.classList.remove('opacity-40', 'pointer-events-none');
+        if (submitBtn) submitBtn.classList.remove('hidden', 'opacity-40', 'pointer-events-none');
         if (overlaySubmitBtn) overlaySubmitBtn.classList.remove('hidden');
       }
     }
@@ -2566,40 +2630,17 @@
       }
     }
 
-    function initProjectStorage() {
+    function loadProjectsDatabaseFromStorage() {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) projectsDatabase = JSON.parse(stored);
       } catch (e) { projectsDatabase = {}; }
-
-      if (!projectsDatabase[appState.activeProjectId]) {
-        projectsDatabase[appState.activeProjectId] = {
-          id: appState.activeProjectId,
-          roomCode: appState.roomCode,
-          name: "기본 수업 프로젝트",
-          topic: appState.topic,
-          theme: appState.theme,
-          submissions: [],
-          wordPositions: {},
-          groups: appState.groups,
-          drawings: [],
-          customMerges: {},
-          lastModified: new Date().toISOString()
-        };
-        saveDatabaseToStorage();
-      } else {
-        const p = projectsDatabase[appState.activeProjectId];
-        if (p.roomCode) appState.roomCode = p.roomCode;
-        if (p.topic) {
-          appState.topic = p.topic;
-          syncTopicToUI(p.topic);
-        }
-        appState.submissions = p.submissions || [];
-        if (p.groups) appState.groups = p.groups;
-        if (p.wordPositions) appState.wordPositions = p.wordPositions;
-        if (p.drawings) appState.drawings = p.drawings;
-      }
       updateActiveProjectBadge();
+    }
+
+    function showProjectLandingScreen() {
+      loadProjectsDatabaseFromStorage();
+      openProjectModal();
     }
 
     function saveDatabaseToStorage() {
@@ -2607,6 +2648,7 @@
     }
 
     function autoSaveActiveProject() {
+      if (!appState.activeProjectId) return;
       if (!projectsDatabase[appState.activeProjectId]) {
         projectsDatabase[appState.activeProjectId] = {
           id: appState.activeProjectId,
@@ -2617,6 +2659,7 @@
       p.roomCode = appState.roomCode;
       p.topic = appState.topic;
       p.theme = appState.theme;
+      p.teacherPin = appState.teacherPin;
       p.submissions = appState.submissions;
       p.wordPositions = appState.wordPositions;
       p.groups = appState.groups;
@@ -2642,6 +2685,10 @@
     }
 
     function closeProjectModal() {
+      if (!appState.activeProjectId) {
+        showToast("진행할 프로젝트를 선택하거나 새로 만들어주세요.");
+        return;
+      }
       document.getElementById('projectModal').classList.add('hidden');
     }
 
@@ -2650,7 +2697,7 @@
       list.innerHTML = '';
       const keys = Object.keys(projectsDatabase);
       if (keys.length === 0) {
-        list.innerHTML = `<div class="text-center py-8 text-[#A09282] text-xs">저장된 프로젝트가 없습니다.</div>`;
+        list.innerHTML = `<div class="text-center py-10 text-[#A09282] text-xs">아직 저장된 프로젝트가 없어요.<br>위의 <b class="text-violet-600">"새 프로젝트"</b> 버튼을 눌러 첫 수업을 시작해보세요!</div>`;
         return;
       }
 
@@ -2704,32 +2751,56 @@
       closeProjectPromptModal();
     }
 
+    let pendingNewProjectTitle = null;
+
     function openPromptNewProjectModal() {
-      requireTeacherAuth(() => {
-        openProjectPrompt("새 수업 프로젝트 제목 입력", "새 수업 프로젝트", (title) => {
-          if (!title) return;
-          const newId = 'proj_' + Date.now();
-          projectsDatabase[newId] = {
-            id: newId,
-            roomCode: generateRoomCode(),
-            name: title,
-            topic: title,
-            theme: 'default',
-            submissions: [],
-            wordPositions: {},
-            groups: [
-              { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
-              { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
-            ],
-            drawings: [],
-            customMerges: {},
-            lastModified: new Date().toISOString()
-          };
-          saveDatabaseToStorage();
-          loadProject(newId);
-          showToast(`'${title}' 새 프로젝트가 생성되었습니다.`);
-        });
+      openProjectPrompt("새 수업 프로젝트 제목 입력", "새 수업 프로젝트", (title) => {
+        if (!title) return;
+        pendingNewProjectTitle = title;
+        document.getElementById('newProjectPinInput').value = '';
+        document.getElementById('newProjectPinModal').classList.remove('hidden');
       });
+    }
+
+    function cancelNewProjectPin() {
+      pendingNewProjectTitle = null;
+      document.getElementById('newProjectPinModal').classList.add('hidden');
+      openProjectModal();
+    }
+
+    function confirmNewProjectPin() {
+      const pin = document.getElementById('newProjectPinInput').value.trim();
+      if (!pin) {
+        showToast("PIN 번호를 입력해주세요.");
+        return;
+      }
+      const title = pendingNewProjectTitle;
+      pendingNewProjectTitle = null;
+
+      const newId = 'proj_' + Date.now();
+      projectsDatabase[newId] = {
+        id: newId,
+        roomCode: generateRoomCode(),
+        name: title,
+        topic: title,
+        theme: 'default',
+        teacherPin: pin,
+        submissions: [],
+        wordPositions: {},
+        groups: [
+          { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+          { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+        ],
+        drawings: [],
+        customMerges: {},
+        lastModified: new Date().toISOString()
+      };
+      saveDatabaseToStorage();
+      document.getElementById('newProjectPinModal').classList.add('hidden');
+      loadProject(newId);
+      appState.isTeacherAuthenticated = true;
+      updateTeacherAuthUI();
+      showToast(`'${title}' 새 프로젝트가 생성되었습니다.`);
     }
 
     function loadProject(projectId) {
@@ -2740,6 +2811,7 @@
       appState.roomCode = p.roomCode || generateRoomCode();
       appState.topic = p.topic || p.name;
       appState.theme = p.theme || 'default';
+      appState.teacherPin = p.teacherPin || '1234';
       appState.submissions = p.submissions || [];
       appState.wordPositions = p.wordPositions || {};
       appState.groups = p.groups || [];
@@ -2970,10 +3042,7 @@
         document.getElementById('headerRoomCode').innerText = appState.roomCode;
         syncTopicToUI(appState.topic);
         renderUnifiedBoard();
-        setTimeout(() => { openStudentModal(); }, 400);
       } else {
-        document.getElementById('headerRoomCode').innerText = appState.roomCode;
-        initProjectStorage();
         updateTeacherAuthUI();
         updateRevealBtnUI();
         applyStudentModeUI();
@@ -2983,6 +3052,8 @@
 
         initDrawingCanvas();
         window.addEventListener('resize', initDrawingCanvas);
+
+        showProjectLandingScreen();
       }
 
       initLocalSyncLayer();
