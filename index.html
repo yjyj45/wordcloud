@@ -103,8 +103,8 @@
                 <span class="text-xs">✨</span>
               </h1>
 
-              <span id="cloudStatusBadge" class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i> <span id="cloudStatusText">정상 실행</span>
+              <span id="cloudStatusBadge" class="bg-amber-50 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
+                <i class="fa-solid fa-circle-notch text-amber-500 text-[10px]"></i> <span id="cloudStatusText">연결 확인 중...</span>
               </span>
 
               <span id="roomCodeBadge" onclick="openShareModal()" class="cursor-pointer bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-black px-2.5 py-0.5 rounded-full border border-violet-200 flex items-center gap-1 transition" title="학생 초대 QR 열기">
@@ -705,12 +705,149 @@
     <span id="toastText">알림</span>
   </div>
 
+  <!-- Firebase Modular Module Script: 기기 간 실시간 클라우드 동기화 -->
+  <script type="module">
+    const defaultFirebaseConfig = {
+      apiKey: "AIzaSyA3e7ohYUYz37ZIkP9NRUWEaqoEB5Z_Cu8",
+      authDomain: "wordcloud-yj.firebaseapp.com",
+      projectId: "wordcloud-yj",
+      storageBucket: "wordcloud-yj.firebasestorage.app",
+      messagingSenderId: "954629445830",
+      appId: "1:954629445830:web:f18c73152fc09c8b20dfc7",
+      measurementId: "G-2XN31E57X2"
+    };
+
+    let firebaseConfig = defaultFirebaseConfig;
+    try {
+      const localCfg = localStorage.getItem('edu_wb_custom_firebase_config');
+      if (localCfg) firebaseConfig = JSON.parse(localCfg);
+    } catch (e) {}
+
+    let app = null;
+    let auth = null;
+    let db = null;
+    let currentUser = null;
+    let isCloudLive = false;
+
+    function updateCloudStatusBadge(connected, text) {
+      const badge = document.getElementById('cloudStatusBadge');
+      const icon = badge ? badge.querySelector('i') : null;
+      const txtEl = document.getElementById('cloudStatusText');
+      if (badge && txtEl) {
+        txtEl.innerText = text;
+        if (connected) {
+          badge.className = "bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1";
+          if (icon) icon.className = "fa-solid fa-circle-check text-emerald-500 text-[10px]";
+        } else {
+          badge.className = "bg-amber-50 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1";
+          if (icon) icon.className = "fa-solid fa-triangle-exclamation text-amber-500 text-[10px]";
+        }
+      }
+    }
+
+    let fsDoc = null, fsSetDoc = null, fsOnSnapshot = null;
+
+    async function initFirebaseCloud() {
+      try {
+        const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, doc, setDoc, onSnapshot }] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
+          import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+        ]);
+        fsDoc = doc;
+        fsSetDoc = setDoc;
+        fsOnSnapshot = onSnapshot;
+
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        const cred = await signInAnonymously(auth);
+        currentUser = cred.user;
+
+        isCloudLive = true;
+        updateCloudStatusBadge(true, "클라우드 켜짐");
+        startFirestoreListeners();
+      } catch (err) {
+        console.warn("Firebase 연결 알림:", err);
+        isCloudLive = false;
+        updateCloudStatusBadge(false, "로컬 동기화만");
+      }
+    }
+
+    function getRoomDocRef(roomCode) {
+      if (!db || !fsDoc) return null;
+      return fsDoc(db, 'rooms', roomCode || 'default_room');
+    }
+
+    function startFirestoreListeners() {
+      if (!db || !currentUser || !window.appState || !window.appState.roomCode) return;
+
+      const roomRef = getRoomDocRef(window.appState.roomCode);
+      if (roomRef) {
+        fsOnSnapshot(roomRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data && data._lastUpdater !== currentUser.uid) {
+              const appState = window.appState;
+              if (data.topic) appState.topic = data.topic;
+              if (data.groups) appState.groups = data.groups;
+              if (data.wordPositions) appState.wordPositions = data.wordPositions;
+              if (data.drawings) appState.drawings = data.drawings;
+              if (data.submissions) appState.submissions = data.submissions;
+              if (data.isRevealed !== undefined) appState.isRevealed = data.isRevealed;
+              if (data.studentRole) appState.studentRole = data.studentRole;
+              if (data.theme) appState.theme = data.theme;
+              if (data.customMerges) appState.customMerges = data.customMerges;
+
+              if (typeof window.syncTopicToUI === 'function') window.syncTopicToUI(appState.topic);
+              if (typeof window.updateRevealBtnUI === 'function') window.updateRevealBtnUI();
+              if (typeof window.updateTeacherRoleBarUI === 'function') window.updateTeacherRoleBarUI(appState.studentRole);
+              if (typeof window.applyStudentModeUI === 'function') window.applyStudentModeUI();
+              if (typeof window.renderUnifiedBoard === 'function') window.renderUnifiedBoard();
+            }
+          }
+        }, (error) => {
+          console.warn("Firestore 구독 알림:", error);
+        });
+      }
+    }
+
+    window.syncStateToCloudFirestore = async function() {
+      const appState = window.appState;
+      if (!db || !currentUser || !isCloudLive || !appState || !appState.roomCode) return;
+      try {
+        const roomRef = getRoomDocRef(appState.roomCode);
+        if (roomRef) {
+          await fsSetDoc(roomRef, {
+            roomCode: appState.roomCode,
+            topic: appState.topic,
+            theme: appState.theme,
+            isRevealed: appState.isRevealed,
+            studentRole: appState.studentRole,
+            submissions: appState.submissions,
+            groups: appState.groups,
+            wordPositions: appState.wordPositions,
+            drawings: appState.drawings,
+            customMerges: appState.customMerges,
+            lastModified: new Date().toISOString(),
+            _lastUpdater: currentUser.uid
+          }, { merge: true });
+        }
+      } catch (err) {
+        console.warn("Firestore 동기화 주의:", err);
+      }
+    };
+
+    window.startFirestoreListeners = startFirestoreListeners;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initFirebaseCloud();
+    });
+  </script>
+
   <!-- Main Logic Script (Canvas Sandbox-Friendly Standard JS) -->
   <script>
-    // Canvas 내장 브라우저 호환 동기화 함수
-    window.syncStateToCloudFirestore = function() {
-      // 로컬 스토리지 기반 실시간 백업 지원
-    };
 
     function generateRoomCode() {
       return String(Math.floor(100000 + Math.random() * 900000));
@@ -857,6 +994,10 @@
       try {
         localStorage.setItem('edu_wb_sync_evt_' + appState.roomCode, JSON.stringify({ ...payload, _t: Date.now() }));
       } catch(e){}
+
+      if (typeof window.syncStateToCloudFirestore === 'function') {
+        window.syncStateToCloudFirestore();
+      }
     }
 
     function handleIncomingSyncMessage(data) {
@@ -1007,6 +1148,7 @@
       autoMergeEnabled: true,
       customMerges: {}
     };
+    window.appState = appState;
 
     let selectedDetailWord = null;
     const STORAGE_KEY = 'edu_wordboard_pastel_canvas_v1';
@@ -2473,6 +2615,10 @@
       p.customMerges = appState.customMerges;
       p.lastModified = new Date().toISOString();
       saveDatabaseToStorage();
+
+      if (typeof window.syncStateToCloudFirestore === 'function') {
+        window.syncStateToCloudFirestore();
+      }
     }
 
     function updateActiveProjectBadge() {
