@@ -779,12 +779,22 @@
       return fsDoc(db, 'rooms', roomCode || 'default_room');
     }
 
+    let activeRoomUnsubscribe = null;
+    let subscribedRoomCode = null;
+
     function startFirestoreListeners() {
       if (!db || !currentUser || !window.appState || !window.appState.roomCode) return;
+      if (subscribedRoomCode === window.appState.roomCode && activeRoomUnsubscribe) return;
+
+      if (activeRoomUnsubscribe) {
+        try { activeRoomUnsubscribe(); } catch (e) {}
+        activeRoomUnsubscribe = null;
+      }
 
       const roomRef = getRoomDocRef(window.appState.roomCode);
       if (roomRef) {
-        fsOnSnapshot(roomRef, (docSnap) => {
+        subscribedRoomCode = window.appState.roomCode;
+        activeRoomUnsubscribe = fsOnSnapshot(roomRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data && data._lastUpdater !== currentUser.uid) {
@@ -2743,6 +2753,10 @@
       closeProjectModal();
       playPopSound(750);
       showToast(`'${p.name}' 프로젝트를 불러왔습니다.`);
+
+      if (typeof window.startFirestoreListeners === 'function') {
+        window.startFirestoreListeners();
+      }
     }
 
     function saveCurrentProjectNow() {
