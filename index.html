@@ -2835,6 +2835,9 @@
       if (typeof window.startFirestoreListeners === 'function') {
         window.startFirestoreListeners();
       }
+      if (typeof window.syncStateToCloudFirestore === 'function') {
+        window.syncStateToCloudFirestore();
+      }
     }
 
     function saveCurrentProjectNow() {
