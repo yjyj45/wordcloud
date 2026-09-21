@@ -272,7 +272,7 @@
             </span>
             <div class="min-w-0">
               <p class="text-[10px] font-black uppercase tracking-wider text-violet-500">🌱 오늘 배울 핵심 주제</p>
-              <h2 id="studentPanelTopicText" class="text-base sm:text-lg font-black text-[#38302A] truncate">오늘의 수업 주제를 입력하세요</h2>
+              <h2 id="studentPanelTopicText" class="font-black text-[#38302A] whitespace-nowrap" data-max-size="18" data-min-size="12">오늘의 수업 주제를 입력하세요</h2>
             </div>
           </div>
 
@@ -309,11 +309,11 @@
       <div id="boardContainer" class="flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]">
 
         <!-- 대형 파스텔 타이틀 배너 -->
-        <div id="boardHeaderTitleBanner" class="absolute top-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[92%] sm:max-w-[75%] text-center">
+        <div id="boardHeaderTitleBanner" class="absolute top-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[95%] text-center">
           <div onclick="openTopicModal()"
-               class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95">
+               class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full">
 
-            <span class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-sm text-yellow-200 flex items-center justify-center text-sm shadow-inner group-hover:rotate-12 transition-transform">
+            <span class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-sm text-yellow-200 flex items-center justify-center text-sm shadow-inner group-hover:rotate-12 transition-transform flex-shrink-0">
               <i class="fa-solid fa-star"></i>
             </span>
 
@@ -321,12 +321,12 @@
               <span class="text-[10px] font-black uppercase tracking-wider text-purple-100 flex items-center gap-1.5">
                 <span>🌱 오늘 배울 핵심 주제</span>
               </span>
-              <h2 id="boardCenterTopicText" class="text-base sm:text-xl font-black tracking-tight text-white drop-shadow-xs truncate max-w-xs sm:max-w-md md:max-w-xl">
+              <h2 id="boardCenterTopicText" class="font-black tracking-tight text-white drop-shadow-xs whitespace-nowrap" data-max-size="20" data-min-size="12">
                 오늘의 수업 주제를 입력하세요
               </h2>
             </div>
 
-            <span class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center text-xs ml-auto transition">
+            <span class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center text-xs ml-auto transition flex-shrink-0">
               <i class="fa-solid fa-pencil"></i>
             </span>
           </div>
@@ -923,6 +923,25 @@
       return String(Math.floor(100000 + Math.random() * 900000));
     }
 
+    function fitTextToContainer(el) {
+      if (!el) return;
+      const container = el.parentElement;
+      if (!container) return;
+      const maxSize = parseFloat(el.dataset.maxSize) || 20;
+      const minSize = parseFloat(el.dataset.minSize) || 12;
+      let size = maxSize;
+      el.style.fontSize = size + 'px';
+      while (el.scrollWidth > container.clientWidth && size > minSize) {
+        size -= 1;
+        el.style.fontSize = size + 'px';
+      }
+    }
+
+    function fitAllTopicText() {
+      fitTextToContainer(document.getElementById('boardCenterTopicText'));
+      fitTextToContainer(document.getElementById('studentPanelTopicText'));
+    }
+
     function syncTopicToUI(topicStr) {
       const hTopic = document.getElementById('displayTopic');
       const bTopic = document.getElementById('boardCenterTopicText');
@@ -930,6 +949,7 @@
       if (hTopic) hTopic.innerText = topicStr;
       if (bTopic) bTopic.innerText = topicStr;
       if (sTopic) sTopic.innerText = topicStr;
+      fitAllTopicText();
     }
 
     let audioCtx = null;
@@ -2959,16 +2979,17 @@
       if (appState.theme === 'chalkboard') {
         board.className = "flex-1 chalk-grid-bg rounded-3xl border-4 border-amber-950 shadow-xl relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg border-2 border-emerald-400/60 hover:border-yellow-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg border-2 border-emerald-400/60 hover:border-yellow-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full";
         }
       } else {
         board.className = "flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95";
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full";
         }
       }
       renderUnifiedBoard();
       autoSaveActiveProject();
+      fitAllTopicText();
     }
 
     function openTopicModal() {
@@ -3066,6 +3087,7 @@
       }
 
       initLocalSyncLayer();
+      window.addEventListener('resize', fitAllTopicText);
 
       document.addEventListener('click', (e) => {
         const menu = document.getElementById('quickMenu');
