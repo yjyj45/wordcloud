@@ -783,6 +783,12 @@
     let currentUser = null;
     let isCloudLive = false;
 
+    // 같은 브라우저에서 교사/학생 탭을 함께 열면 Firebase 익명 로그인 UID가
+    // 서로 같아지므로, UID 대신 탭(페이지 로드)마다 고유한 값으로 "내가 방금
+    // 쓴 내용" 여부를 구분한다. 그렇지 않으면 같은 브라우저의 다른 탭이 쓴
+    // 변경사항을 "내가 쓴 것"으로 착각해 무시해버린다.
+    const tabInstanceId = 'tab_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
     function updateCloudStatusBadge(connected, text) {
       const badge = document.getElementById('cloudStatusBadge');
       const icon = badge ? badge.querySelector('i') : null;
@@ -858,7 +864,7 @@
         activeRoomUnsubscribe = fsOnSnapshot(roomRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data && data._lastUpdater !== currentUser.uid) {
+            if (data && data._lastUpdater !== tabInstanceId) {
               const appState = window.appState;
               if (data.topic) appState.topic = data.topic;
               if (data.groups) appState.groups = data.groups;
@@ -901,7 +907,7 @@
             drawings: appState.drawings,
             customMerges: appState.customMerges,
             lastModified: new Date().toISOString(),
-            _lastUpdater: currentUser.uid
+            _lastUpdater: tabInstanceId
           }, { merge: true });
         }
       } catch (err) {
