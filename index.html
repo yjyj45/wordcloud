@@ -828,12 +828,6 @@
         isCloudLive = true;
         updateCloudStatusBadge(true, "클라우드 켜짐");
         startFirestoreListeners();
-
-        // 연결이 완료되기 전에 로컬에서 먼저 바뀐 내용(예: 프로젝트 생성 직후 주제 입력)이
-        // 그대로 유실되지 않도록, 연결 성공 시점의 현재 상태를 한 번 밀어넣는다.
-        if (typeof window.syncStateToCloudFirestore === 'function') {
-          window.syncStateToCloudFirestore();
-        }
       } catch (err) {
         console.warn("Firebase 연결 알림:", err);
         isCloudLive = false;
