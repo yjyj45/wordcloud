@@ -263,6 +263,31 @@
     <!-- MAIN WORKSPACE -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-3 flex flex-col min-h-0 relative">
 
+      <!-- PAGE NAVIGATOR: switch between pages within this project -->
+      <div id="pageNavigatorBar" class="flex items-center justify-between gap-2 mb-2 sm:mb-3 flex-shrink-0 bg-white/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-[#EAE2D5] shadow-xs">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <button id="pagePrevBtn" onclick="goToPrevPage()" class="w-8 h-8 rounded-xl bg-[#F5EFE6] hover:bg-[#ECE3D5] disabled:opacity-30 disabled:cursor-not-allowed text-[#554A3E] flex items-center justify-center transition flex-shrink-0">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span class="text-xs font-black text-[#554A3E] px-1 flex-shrink-0">
+            <span id="pageIndicatorCurrent">1</span> / <span id="pageIndicatorTotal">1</span>
+          </span>
+          <button id="pageNextBtn" onclick="goToNextPage()" class="w-8 h-8 rounded-xl bg-[#F5EFE6] hover:bg-[#ECE3D5] disabled:opacity-30 disabled:cursor-not-allowed text-[#554A3E] flex items-center justify-center transition flex-shrink-0">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <input type="text" id="pageTitleInput" onchange="renamePage(this.value)" class="teacher-only ml-1.5 text-xs font-bold text-[#38302A] bg-transparent border-b border-dashed border-transparent hover:border-[#DFD5C5] focus:border-violet-400 outline-none px-1 py-0.5 min-w-0 w-28 sm:w-44" placeholder="페이지 이름">
+          <span id="pageTitleDisplay" class="student-only hidden ml-1.5 text-xs font-bold text-[#554A3E] truncate"></span>
+        </div>
+        <div class="flex items-center gap-1.5 teacher-only flex-shrink-0">
+          <button onclick="addNewPage()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">페이지 추가</span>
+          </button>
+          <button onclick="deleteCurrentPage()" class="text-[#A09282] hover:text-rose-600 p-1.5 rounded-xl transition" title="이 페이지 삭제">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- STUDENT TOP PANEL: always-visible topic + inline submission form -->
       <div id="studentTopPanel" class="student-only hidden mb-2 sm:mb-3 flex-shrink-0">
         <div class="bg-white rounded-3xl border-2 border-violet-100 shadow-sm p-4 sm:p-5">
@@ -860,15 +885,14 @@
             const data = docSnap.data();
             if (data && data._lastUpdater !== tabInstanceId) {
               const appState = window.appState;
-              if (data.topic) appState.topic = data.topic;
-              if (data.groups) appState.groups = data.groups;
-              if (data.wordPositions) appState.wordPositions = data.wordPositions;
-              if (data.drawings) appState.drawings = data.drawings;
-              if (data.submissions) appState.submissions = data.submissions;
-              if (data.isRevealed !== undefined) appState.isRevealed = data.isRevealed;
+              if (Array.isArray(data.pages) && data.pages.length) {
+                appState.pages = data.pages;
+                if (!appState.pages.find(pg => pg.id === appState.activePageId)) {
+                  appState.activePageId = appState.pages[0].id;
+                }
+              }
               if (data.studentRole) appState.studentRole = data.studentRole;
               if (data.theme) appState.theme = data.theme;
-              if (data.customMerges) appState.customMerges = data.customMerges;
 
               if (typeof window.syncTopicToUI === 'function') window.syncTopicToUI(appState.topic);
               if (typeof window.updateRevealBtnUI === 'function') window.updateRevealBtnUI();
@@ -891,15 +915,9 @@
         if (roomRef) {
           await fsSetDoc(roomRef, {
             roomCode: appState.roomCode,
-            topic: appState.topic,
             theme: appState.theme,
-            isRevealed: appState.isRevealed,
             studentRole: appState.studentRole,
-            submissions: appState.submissions,
-            groups: appState.groups,
-            wordPositions: appState.wordPositions,
-            drawings: appState.drawings,
-            customMerges: appState.customMerges,
+            pages: appState.pages,
             lastModified: new Date().toISOString(),
             _lastUpdater: tabInstanceId
           }, { merge: true });
@@ -1062,6 +1080,7 @@
       const payload = {
         type: 'STATE_UPDATE',
         roomCode: appState.roomCode,
+        pageId: appState.activePageId,
         state: patchObj
       };
       if (broadcastChannel) {
@@ -1076,6 +1095,7 @@
       const payload = {
         type: 'NEW_SUBMISSION',
         roomCode: appState.roomCode,
+        pageId: appState.activePageId,
         submission: submissionObj,
         topic: appState.topic
       };
@@ -1094,13 +1114,15 @@
 
     function handleIncomingSyncMessage(data) {
       if (!data || data.roomCode !== appState.roomCode) return;
+      const targetPage = appState.pages.find(pg => pg.id === data.pageId) || getActivePage();
+      const isActivePage = targetPage.id === appState.activePageId;
 
       if (data.type === 'NEW_SUBMISSION' && data.submission) {
-        const idx = appState.submissions.findIndex(s => s.author === data.submission.author);
+        const idx = targetPage.submissions.findIndex(s => s.author === data.submission.author);
         if (idx !== -1) {
-          appState.submissions[idx] = data.submission;
+          targetPage.submissions[idx] = data.submission;
         } else {
-          appState.submissions.push(data.submission);
+          targetPage.submissions.push(data.submission);
         }
         autoSaveActiveProject();
         renderUnifiedBoard();
@@ -1108,8 +1130,8 @@
         showToast(`생각 도착: [${data.submission.author}] ${data.submission.rawText}`);
       } else if (data.type === 'STATE_UPDATE' && data.state) {
         if (data.state.isRevealed !== undefined) {
-          appState.isRevealed = data.state.isRevealed;
-          updateRevealBtnUI();
+          targetPage.isRevealed = data.state.isRevealed;
+          if (isActivePage) updateRevealBtnUI();
         }
         if (data.state.studentRole) {
           appState.studentRole = data.state.studentRole;
@@ -1117,11 +1139,11 @@
           applyStudentModeUI();
         }
         if (data.state.topic) {
-          appState.topic = data.state.topic;
-          syncTopicToUI(data.state.topic);
+          targetPage.topic = data.state.topic;
+          if (isActivePage) syncTopicToUI(data.state.topic);
         }
-        if (data.state.groups) appState.groups = data.state.groups;
-        if (data.state.wordPositions) appState.wordPositions = data.state.wordPositions;
+        if (data.state.groups) targetPage.groups = data.state.groups;
+        if (data.state.wordPositions) targetPage.wordPositions = data.state.wordPositions;
         renderUnifiedBoard();
       }
     }
@@ -1220,26 +1242,53 @@
     }
 
     // 전역 상태 객체
+    function createDefaultPage(title) {
+      return {
+        id: 'page_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        title: title || '페이지 1',
+        topic: title || "오늘의 수업 주제를 입력하세요",
+        isRevealed: false,
+        submissions: [],
+        wordPositions: {},
+        groups: [
+          { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+          { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+        ],
+        drawings: [],
+        autoMergeEnabled: true,
+        customMerges: {}
+      };
+    }
+
+    function getActivePage() {
+      return appState.pages.find(p => p.id === appState.activePageId) || appState.pages[0];
+    }
+
     let appState = {
       activeProjectId: '',
       roomCode: '',
-      topic: "오늘의 수업 주제를 입력하세요",
       theme: 'default',
-      isRevealed: false,
       studentRole: 'contributor',
       isTeacherAuthenticated: true,
       teacherPin: "1234",
       isStudentView: false,
-      submissions: [],
-      wordPositions: {},
-      groups: [
-        { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
-        { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
-      ],
-      drawings: [],
-      autoMergeEnabled: true,
-      customMerges: {}
+      pages: [createDefaultPage('페이지 1')],
+      activePageId: null
     };
+    appState.activePageId = appState.pages[0].id;
+
+    // 기존 코드 대부분이 appState.topic / appState.submissions 등을 직접 읽고 쓰도록
+    // 짜여 있어서, 이 필드들을 "현재 활성 페이지"로 투명하게 연결해주는 접근자를 둔다.
+    // 이렇게 하면 페이지 기능을 추가하면서도 기존 함수들을 거의 건드릴 필요가 없다.
+    ['topic', 'isRevealed', 'submissions', 'wordPositions', 'groups', 'drawings', 'autoMergeEnabled', 'customMerges'].forEach((key) => {
+      Object.defineProperty(appState, key, {
+        get() { return getActivePage()[key]; },
+        set(v) { getActivePage()[key] = v; },
+        configurable: true,
+        enumerable: true
+      });
+    });
+
     window.appState = appState;
 
     let selectedDetailWord = null;
@@ -1362,6 +1411,8 @@
       const emptyMsg = document.getElementById('emptyCloudMsg');
       const hiddenOverlay = document.getElementById('hiddenScreenOverlay');
       if (!canvasEl) return;
+
+      renderPageSwitcher();
 
       const words = calculateWordFrequencies();
 
@@ -2683,14 +2734,11 @@
       }
       const p = projectsDatabase[appState.activeProjectId];
       p.roomCode = appState.roomCode;
-      p.topic = appState.topic;
       p.theme = appState.theme;
       p.teacherPin = appState.teacherPin;
-      p.submissions = appState.submissions;
-      p.wordPositions = appState.wordPositions;
-      p.groups = appState.groups;
-      p.drawings = appState.drawings;
-      p.customMerges = appState.customMerges;
+      p.studentRole = appState.studentRole;
+      p.pages = appState.pages;
+      delete p.topic; delete p.submissions; delete p.wordPositions; delete p.groups; delete p.drawings; delete p.customMerges;
       p.lastModified = new Date().toISOString();
       saveDatabaseToStorage();
 
@@ -2730,8 +2778,12 @@
       const sorted = keys.map(k => projectsDatabase[k]).sort((a,b) => new Date(b.lastModified) - new Date(a.lastModified));
       sorted.forEach(proj => {
         const isActive = proj.id === appState.activeProjectId;
-        const studentCount = new Set((proj.submissions || []).map(s => s.author || '익명')).size;
-        const totalWords = (proj.submissions || []).reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
+        const pages = Array.isArray(proj.pages) && proj.pages.length ? proj.pages : [{ topic: proj.topic, submissions: proj.submissions || [] }];
+        const allSubmissions = pages.flatMap(pg => pg.submissions || []);
+        const studentCount = new Set(allSubmissions.map(s => s.author || '익명')).size;
+        const totalWords = allSubmissions.reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
+        const firstTopic = pages[0].topic || '(주제 없음)';
+        const topicLabel = pages.length > 1 ? `${firstTopic} 외 ${pages.length - 1}페이지` : firstTopic;
 
         const card = document.createElement('div');
         card.className = `p-3.5 rounded-3xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${isActive ? 'bg-violet-50 border-violet-300 ring-2 ring-violet-200' : 'bg-[#FAF8F5] hover:bg-[#F5EFE6] border-[#EAE2D5]'}`;
@@ -2740,8 +2792,9 @@
             <div class="flex items-center gap-2 mb-0.5">
               <span class="font-black text-[#38302A] text-sm truncate">${proj.name}</span>
               ${isActive ? '<span class="bg-violet-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">진행 중</span>' : ''}
+              ${pages.length > 1 ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full">${pages.length}페이지</span>` : ''}
             </div>
-            <p class="text-xs text-[#6B5E4E] font-bold mb-1 truncate">주제: <span class="text-violet-700">${proj.topic}</span></p>
+            <p class="text-xs text-[#6B5E4E] font-bold mb-1 truncate">주제: <span class="text-violet-700">${topicLabel}</span></p>
             <div class="text-[11px] text-[#8C7D6C] font-medium">
               <span>코드: ${proj.roomCode || '---'}</span> • <span>${studentCount}명 참여</span> • <span>${totalWords}개 단어</span>
             </div>
@@ -2804,21 +2857,16 @@
       pendingNewProjectTitle = null;
 
       const newId = 'proj_' + Date.now();
+      const firstPage = createDefaultPage(title);
+      firstPage.title = '페이지 1';
       projectsDatabase[newId] = {
         id: newId,
         roomCode: generateRoomCode(),
         name: title,
-        topic: title,
         theme: 'default',
         teacherPin: pin,
-        submissions: [],
-        wordPositions: {},
-        groups: [
-          { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
-          { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
-        ],
-        drawings: [],
-        customMerges: {},
+        studentRole: 'contributor',
+        pages: [firstPage],
         lastModified: new Date().toISOString()
       };
       saveDatabaseToStorage();
@@ -2829,24 +2877,121 @@
       showToast(`'${title}' 새 프로젝트가 생성되었습니다.`);
     }
 
+    function renderPageSwitcher() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      const total = appState.pages.length;
+      const cur = document.getElementById('pageIndicatorCurrent');
+      const tot = document.getElementById('pageIndicatorTotal');
+      if (cur) cur.innerText = idx >= 0 ? idx + 1 : 1;
+      if (tot) tot.innerText = total;
+
+      const page = getActivePage();
+      const titleInput = document.getElementById('pageTitleInput');
+      const titleDisplay = document.getElementById('pageTitleDisplay');
+      if (titleInput) titleInput.value = page.title || '';
+      if (titleDisplay) titleDisplay.innerText = page.title || '';
+
+      const prevBtn = document.getElementById('pagePrevBtn');
+      const nextBtn = document.getElementById('pageNextBtn');
+      if (prevBtn) prevBtn.disabled = idx <= 0;
+      if (nextBtn) nextBtn.disabled = idx >= total - 1;
+    }
+
+    function switchToPage(pageId) {
+      if (!appState.pages.find(pg => pg.id === pageId)) return;
+      appState.activePageId = pageId;
+      renderPageSwitcher();
+      syncTopicToUI(appState.topic);
+      updateRevealBtnUI();
+      renderUnifiedBoard();
+    }
+
+    function goToPrevPage() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      if (idx > 0) switchToPage(appState.pages[idx - 1].id);
+    }
+
+    function goToNextPage() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      if (idx < appState.pages.length - 1) switchToPage(appState.pages[idx + 1].id);
+    }
+
+    function addNewPage() {
+      requireTeacherAuth(() => {
+        const newPage = createDefaultPage(`페이지 ${appState.pages.length + 1}`);
+        appState.pages.push(newPage);
+        switchToPage(newPage.id);
+        autoSaveActiveProject();
+        playPopSound(720);
+        showToast("새 페이지가 추가되었습니다.");
+      });
+    }
+
+    function deleteCurrentPage() {
+      requireTeacherAuth(() => {
+        if (appState.pages.length <= 1) {
+          showToast("최소 1개의 페이지는 유지되어야 합니다.");
+          return;
+        }
+        if (!confirm("이 페이지와 그 안의 모든 제출·그룹·판서가 삭제됩니다. 계속할까요?")) return;
+
+        const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+        appState.pages.splice(idx, 1);
+        appState.activePageId = appState.pages[Math.max(0, idx - 1)].id;
+
+        renderPageSwitcher();
+        syncTopicToUI(appState.topic);
+        updateRevealBtnUI();
+        renderUnifiedBoard();
+        autoSaveActiveProject();
+        showToast("페이지가 삭제되었습니다.");
+      });
+    }
+
+    function renamePage(newTitle) {
+      const t = (newTitle || '').trim();
+      if (!t) { renderPageSwitcher(); return; }
+      getActivePage().title = t;
+      renderPageSwitcher();
+      autoSaveActiveProject();
+    }
+
     function loadProject(projectId) {
       if (!projectsDatabase[projectId]) return;
       autoSaveActiveProject();
       const p = projectsDatabase[projectId];
       appState.activeProjectId = p.id;
       appState.roomCode = p.roomCode || generateRoomCode();
-      appState.topic = p.topic || p.name;
       appState.theme = p.theme || 'default';
       appState.teacherPin = p.teacherPin || '1234';
-      appState.submissions = p.submissions || [];
-      appState.wordPositions = p.wordPositions || {};
-      appState.groups = p.groups || [];
-      appState.drawings = p.drawings || [];
-      appState.customMerges = p.customMerges || {};
+      appState.studentRole = p.studentRole || 'contributor';
+
+      if (Array.isArray(p.pages) && p.pages.length) {
+        appState.pages = p.pages;
+      } else {
+        // 페이지 기능 이전에 저장된 예전 형식(단일 보드)을 페이지 1개로 이관한다.
+        appState.pages = [{
+          id: 'page_1',
+          title: '페이지 1',
+          topic: p.topic || p.name || "오늘의 수업 주제를 입력하세요",
+          isRevealed: false,
+          submissions: p.submissions || [],
+          wordPositions: p.wordPositions || {},
+          groups: p.groups || [
+            { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+            { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+          ],
+          drawings: p.drawings || [],
+          autoMergeEnabled: true,
+          customMerges: p.customMerges || {}
+        }];
+      }
+      appState.activePageId = appState.pages[0].id;
 
       syncTopicToUI(appState.topic);
       document.getElementById('headerRoomCode').innerText = appState.roomCode;
       updateActiveProjectBadge();
+      renderPageSwitcher();
       renderUnifiedBoard();
       closeProjectModal();
       playPopSound(750);
