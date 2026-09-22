@@ -702,7 +702,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-[#38302A]">유사 낱말 병합 관리</h3>
-            <p class="text-xs text-[#7A6D5D]">조사·복수형·오타는 자동으로 합쳐져요. 뜻은 같지만 표현이 많이 다른 낱말은 아래에서 체크해 직접 합쳐주세요.</p>
+            <p class="text-xs text-[#7A6D5D]">조사·복수형과 확실한 오타(글자 하나 차이)만 자동으로 합쳐져요. 뜻은 같지만 표현이 많이 다른 낱말은 체크해서 직접 합치고, 잘못 합쳐진 낱말은 옆의 '✕분리'로 다시 떼어낼 수 있어요.</p>
           </div>
         </div>
         <button onclick="closeMergeManager()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
@@ -1250,22 +1250,24 @@
 
     // 완전히 다른 표현(문장을 풀어쓴 경우 등)까지 의미상으로 묶어주는 건
     // 실제 AI 모델 호출이 필요해서 이 정적 페이지에서는 안전하게 넣기 어렵고,
-    // 대신 오타/한두 글자 차이처럼 편집 거리가 가까운 낱말들을 자동으로
-    // 묶어준다. 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합칠 수 있다.
+    // 대신 길이가 같고 글자 하나만 다른(=오타로 보이는) 낱말만 자동으로 묶어준다.
+    // 글자가 추가/삭제된 경우(예: "생물요소"↔"비생물요소")는 접두사 하나 차이로
+    // 뜻이 완전히 달라지는 경우가 많아 자동 병합 대상에서 제외한다.
+    // 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합치거나 분리할 수 있다.
     function mergeFuzzyClusters(clusters) {
       const keys = Object.keys(clusters);
       const absorbedKeys = new Set();
+      const excluded = new Set(appState.excludedFromFuzzy || []);
 
       for (let i = 0; i < keys.length; i++) {
         const keyA = keys[i];
-        if (absorbedKeys.has(keyA) || keyA.length < 3) continue;
+        if (absorbedKeys.has(keyA) || keyA.length < 3 || excluded.has(keyA)) continue;
 
         for (let j = i + 1; j < keys.length; j++) {
           const keyB = keys[j];
-          if (absorbedKeys.has(keyB) || keyB.length < 3) continue;
-
-          const maxAllowedDist = Math.min(keyA.length, keyB.length) >= 5 ? 2 : 1;
-          if (levenshteinDistance(keyA, keyB) > maxAllowedDist) continue;
+          if (absorbedKeys.has(keyB) || keyB.length < 3 || excluded.has(keyB)) continue;
+          if (keyA.length !== keyB.length) continue;
+          if (levenshteinDistance(keyA, keyB) !== 1) continue;
 
           const survivor = clusters[keyA].totalCount >= clusters[keyB].totalCount ? keyA : keyB;
           const absorbed = survivor === keyA ? keyB : keyA;
@@ -1365,7 +1367,8 @@
         groups: [],
         drawings: [],
         autoMergeEnabled: true,
-        customMerges: {}
+        customMerges: {},
+        excludedFromFuzzy: []
       };
     }
 
@@ -1389,7 +1392,7 @@
     // 기존 코드 대부분이 appState.topic / appState.submissions 등을 직접 읽고 쓰도록
     // 짜여 있어서, 이 필드들을 "현재 활성 페이지"로 투명하게 연결해주는 접근자를 둔다.
     // 이렇게 하면 페이지 기능을 추가하면서도 기존 함수들을 거의 건드릴 필요가 없다.
-    ['topic', 'isRevealed', 'submissions', 'wordPositions', 'groups', 'drawings', 'autoMergeEnabled', 'customMerges'].forEach((key) => {
+    ['topic', 'isRevealed', 'submissions', 'wordPositions', 'groups', 'drawings', 'autoMergeEnabled', 'customMerges', 'excludedFromFuzzy'].forEach((key) => {
       Object.defineProperty(appState, key, {
         get() { return getActivePage()[key]; },
         set(v) { getActivePage()[key] = v; },
@@ -3009,7 +3012,8 @@
           ],
           drawings: data.drawings || [],
           autoMergeEnabled: true,
-          customMerges: data.customMerges || {}
+          customMerges: data.customMerges || {},
+          excludedFromFuzzy: data.excludedFromFuzzy || []
         }];
       }
 
@@ -3225,7 +3229,8 @@
           ],
           drawings: p.drawings || [],
           autoMergeEnabled: true,
-          customMerges: p.customMerges || {}
+          customMerges: p.customMerges || {},
+          excludedFromFuzzy: p.excludedFromFuzzy || []
         }];
       }
       appState.activePageId = appState.pages[0].id;
@@ -3407,16 +3412,26 @@
         list.innerHTML = `<p class="text-center text-[#A09282] py-6 text-xs">등록된 단어가 없습니다.</p>`;
       } else {
         words.forEach(w => {
-          const row = document.createElement('label');
-          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center gap-2.5 cursor-pointer hover:bg-[#F5EFE6] transition";
+          const row = document.createElement('div');
+          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-start gap-2.5 hover:bg-[#F5EFE6] transition";
+          const synonymsHtml = w.synonyms.map(s => {
+            if (w.synonyms.length <= 1) return `<span>${s.word}</span>`;
+            const escaped = s.word.replace(/'/g, "\\'");
+            return `<span class="inline-flex items-center gap-1 bg-white border border-[#EAE2D5] rounded-full pl-2 pr-1 py-0.5 mr-1 mb-1">
+              <span>${s.word}</span>
+              <button type="button" onclick="splitWordFromCluster('${escaped}')" title="이 낱말만 따로 분리" class="text-[#B45309] hover:text-red-600 text-[10px] font-bold px-1">✕분리</button>
+            </span>`;
+          }).join(w.synonyms.length <= 1 ? ', ' : '');
           row.innerHTML = `
-            <input type="checkbox" class="merge-select-checkbox w-4 h-4 accent-emerald-500 flex-shrink-0" data-normkey="${w.normKey || w.representative}">
+            <label class="cursor-pointer pt-0.5">
+              <input type="checkbox" class="merge-select-checkbox w-4 h-4 accent-emerald-500 flex-shrink-0" data-normkey="${w.normKey || w.representative}">
+            </label>
             <div class="flex-1 min-w-0">
               <div>
                 <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
                 <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
               </div>
-              <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
+              <div class="text-[11px] text-[#7A6D5D] font-medium mt-1 flex flex-wrap items-center">${synonymsHtml}</div>
             </div>
           `;
           list.appendChild(row);
@@ -3454,6 +3469,22 @@
       renderUnifiedBoard();
       openMergeManager();
       showToast(`'${target.representative}'(으)로 ${selectedClusters.length}개 낱말을 합쳤습니다.`);
+    }
+
+    // 자동(오타/띄어쓰기) 또는 교사가 수동으로 합친 낱말 묶음에서 특정 표현 하나만
+    // 다시 떼어낸다. customMerges에 자기 자신을 매핑해 기존 병합 규칙을 덮어쓰고,
+    // excludedFromFuzzy에 등록해 자동 유사어 병합에도 다시 걸리지 않도록 막는다.
+    function splitWordFromCluster(rawWord) {
+      if (!rawWord) return;
+      appState.customMerges = { ...appState.customMerges, [rawWord]: rawWord };
+      const excluded = appState.excludedFromFuzzy || [];
+      if (!excluded.includes(rawWord)) {
+        appState.excludedFromFuzzy = [...excluded, rawWord];
+      }
+      autoSaveActiveProject();
+      renderUnifiedBoard();
+      openMergeManager();
+      showToast(`'${rawWord}'을(를) 따로 분리했습니다.`);
     }
 
     function openResetModal() { toggleMenu(false); document.getElementById('resetModal').classList.remove('hidden'); }
