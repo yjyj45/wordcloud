@@ -1654,7 +1654,7 @@
             ` : ''}
           `;
 
-          if (canDragAndEdit) setupDraggableWord(nestedChip, item.representative, true);
+          if (canDragAndEdit) setupDraggableWord(nestedChip, item.representative, true, isTeacher);
           nestedChip.addEventListener('click', () => {
             if (!nestedChip.dataset.dragged) openWordDetailModal(item);
           });
@@ -1687,7 +1687,7 @@
             ` : ''}
           `;
 
-          if (canDragAndEdit) setupDraggableWord(wordBadge, item.representative, false);
+          if (canDragAndEdit) setupDraggableWord(wordBadge, item.representative, false, isTeacher);
           wordBadge.addEventListener('click', () => {
             if (!wordBadge.dataset.dragged) openWordDetailModal(item);
           });
@@ -1724,7 +1724,54 @@
       canvasEl.style.minHeight = Math.max(460, maxBottom + 60) + 'px';
     }
 
-    function setupDraggableWord(element, wordKey, isInsideGroup) {
+    // 드래그 중인 낱말 칩의 중심점이 다른 낱말 칩 위에 겹쳐 있는지 찾는다.
+    // 그 위에 놓으면(드롭) 병합 대상이 된다.
+    function findWordMergeDropTarget(draggedEl, draggedWordKey) {
+      const rect = draggedEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const nodes = document.querySelectorAll('.canvas-item-node[data-node-id^="word_"]');
+      for (const node of nodes) {
+        if (node === draggedEl) continue;
+        const nodeRepWord = node.dataset.nodeId.slice(5);
+        if (nodeRepWord === draggedWordKey) continue;
+        const r = node.getBoundingClientRect();
+        if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) {
+          return node;
+        }
+      }
+      return null;
+    }
+
+    function clearMergeDropHover() {
+      document.querySelectorAll('.merge-drop-hover').forEach(el => {
+        el.classList.remove('merge-drop-hover', 'ring-4', 'ring-emerald-400', 'ring-offset-2', 'scale-105');
+      });
+    }
+
+    // 교사가 낱말 칩을 다른 낱말 칩 위로 드래그해서 놓으면(드롭) 두 낱말을
+    // 하나로 합친다. 드롭한 대상(목표) 낱말이 대표어로 남고, 끌어온 낱말은
+    // 그 안의 유사 낱말로 흡수된다.
+    function mergeWordsByDragDrop(sourceRepWord, targetRepWord) {
+      if (!sourceRepWord || !targetRepWord || sourceRepWord === targetRepWord) return;
+      const words = calculateWordFrequencies();
+      const sourceCluster = words.find(w => w.representative === sourceRepWord);
+      const targetCluster = words.find(w => w.representative === targetRepWord);
+      if (!sourceCluster || !targetCluster) return;
+
+      const targetKey = targetCluster.normKey || targetCluster.representative;
+      sourceCluster.synonyms.forEach(s => {
+        appState.customMerges[s.word] = targetKey;
+      });
+      delete appState.wordPositions[sourceRepWord];
+
+      autoSaveActiveProject();
+      renderUnifiedBoard();
+      playPopSound(620);
+      showToast(`'${sourceCluster.representative}'을(를) '${targetCluster.representative}'에 합쳤습니다.`);
+    }
+
+    function setupDraggableWord(element, wordKey, isInsideGroup, isTeacher) {
       let isDragging = false;
       let startX, startY, origX, origY;
 
@@ -1774,6 +1821,14 @@
           appState.wordPositions[wordKey].x = newX;
           appState.wordPositions[wordKey].y = newY;
 
+          if (isTeacher) {
+            clearMergeDropHover();
+            const hoverTarget = findWordMergeDropTarget(element, wordKey);
+            if (hoverTarget) {
+              hoverTarget.classList.add('merge-drop-hover', 'ring-4', 'ring-emerald-400', 'ring-offset-2', 'scale-105');
+            }
+          }
+
           redrawAllDrawings();
         }
       };
@@ -1786,6 +1841,17 @@
         element.removeEventListener('pointercancel', onPointerUp);
 
         if (isDragging) {
+          if (isTeacher) {
+            const mergeTarget = findWordMergeDropTarget(element, wordKey);
+            clearMergeDropHover();
+            if (mergeTarget) {
+              const targetRepWord = mergeTarget.dataset.nodeId.slice(5);
+              mergeWordsByDragDrop(wordKey, targetRepWord);
+              setTimeout(() => { element.dataset.dragged = ""; }, 50);
+              return;
+            }
+          }
+
           const wordRect = element.getBoundingClientRect();
           const wordCenterX = wordRect.left + wordRect.width / 2;
           const wordCenterY = wordRect.top + wordRect.height / 2;
@@ -2223,9 +2289,14 @@
       document.getElementById('detailStudentList').innerHTML = item.students.map(s =>
         `<span class="bg-violet-50 text-violet-800 text-xs px-2.5 py-1 rounded-xl font-bold border border-violet-200">${s}</span>`
       ).join('');
-      document.getElementById('detailSynonymList').innerHTML = item.synonyms.map(s =>
-        `<span class="bg-white text-[#554A3E] text-xs px-2.5 py-1 rounded-xl font-bold border border-[#EAE2D5]">${s.word} <b class="text-violet-600">(${s.count})</b></span>`
-      ).join('');
+      const canSplit = item.synonyms.length > 1 && appState.isTeacherAuthenticated && !appState.isStudentView;
+      document.getElementById('detailSynonymList').innerHTML = item.synonyms.map(s => {
+        const escaped = s.word.replace(/'/g, "\\'");
+        return `<span class="bg-white text-[#554A3E] text-xs px-2.5 py-1 rounded-xl font-bold border border-[#EAE2D5] inline-flex items-center gap-1.5">
+          <span>${s.word} <b class="text-violet-600">(${s.count})</b></span>
+          ${canSplit ? `<button onclick="splitWordFromDetail('${escaped}')" title="이 낱말만 따로 분리" class="text-[#B45309] hover:text-red-600 text-[10px] font-bold">✕분리</button>` : ''}
+        </span>`;
+      }).join('');
 
       const delBtn = document.getElementById('deleteWordEntireBtn');
       if (appState.isTeacherAuthenticated && !appState.isStudentView) {
@@ -3474,7 +3545,10 @@
     // 자동(오타/띄어쓰기) 또는 교사가 수동으로 합친 낱말 묶음에서 특정 표현 하나만
     // 다시 떼어낸다. customMerges에 자기 자신을 매핑해 기존 병합 규칙을 덮어쓰고,
     // excludedFromFuzzy에 등록해 자동 유사어 병합에도 다시 걸리지 않도록 막는다.
-    function splitWordFromCluster(rawWord) {
+    // 자동(오타/띄어쓰기) 또는 교사가 합친 낱말 묶음에서 특정 표현 하나만
+    // 다시 떼어낸다. customMerges에 자기 자신을 매핑해 기존 병합 규칙을 덮어쓰고,
+    // excludedFromFuzzy에 등록해 자동 유사어 병합에도 다시 걸리지 않도록 막는다.
+    function performWordSplit(rawWord) {
       if (!rawWord) return;
       appState.customMerges = { ...appState.customMerges, [rawWord]: rawWord };
       const excluded = appState.excludedFromFuzzy || [];
@@ -3483,8 +3557,23 @@
       }
       autoSaveActiveProject();
       renderUnifiedBoard();
-      openMergeManager();
       showToast(`'${rawWord}'을(를) 따로 분리했습니다.`);
+    }
+
+    function splitWordFromCluster(rawWord) {
+      performWordSplit(rawWord);
+      openMergeManager();
+    }
+
+    function splitWordFromDetail(rawWord) {
+      performWordSplit(rawWord);
+      const words = calculateWordFrequencies();
+      const updated = words.find(w => w.synonyms.some(s => s.word === rawWord));
+      if (updated) {
+        openWordDetailModal(updated);
+      } else {
+        closeWordDetailModal();
+      }
     }
 
     function openResetModal() { toggleMenu(false); document.getElementById('resetModal').classList.remove('hidden'); }
