@@ -83,7 +83,7 @@
     }
   </style>
 </head>
-<body class="bg-[#FDFBF7] text-[#4A4036] min-h-screen flex flex-col overflow-hidden">
+<body class="bg-[#FDFBF7] text-[#4A4036] min-h-screen flex flex-col">
 
   <!-- MAIN APP CONTAINER -->
   <div id="teacherAppRoot" class="flex-1 flex flex-col min-h-0">
@@ -263,6 +263,31 @@
     <!-- MAIN WORKSPACE -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-3 flex flex-col min-h-0 relative">
 
+      <!-- PAGE NAVIGATOR: switch between pages within this project -->
+      <div id="pageNavigatorBar" class="flex items-center justify-between gap-2 mb-2 sm:mb-3 flex-shrink-0 bg-white/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-[#EAE2D5] shadow-xs">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <button id="pagePrevBtn" onclick="goToPrevPage()" class="w-8 h-8 rounded-xl bg-[#F5EFE6] hover:bg-[#ECE3D5] disabled:opacity-30 disabled:cursor-not-allowed text-[#554A3E] flex items-center justify-center transition flex-shrink-0">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span class="text-xs font-black text-[#554A3E] px-1 flex-shrink-0">
+            <span id="pageIndicatorCurrent">1</span> / <span id="pageIndicatorTotal">1</span>
+          </span>
+          <button id="pageNextBtn" onclick="goToNextPage()" class="w-8 h-8 rounded-xl bg-[#F5EFE6] hover:bg-[#ECE3D5] disabled:opacity-30 disabled:cursor-not-allowed text-[#554A3E] flex items-center justify-center transition flex-shrink-0">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <input type="text" id="pageTitleInput" onchange="renamePage(this.value)" class="teacher-only ml-1.5 text-xs font-bold text-[#38302A] bg-transparent border-b border-dashed border-transparent hover:border-[#DFD5C5] focus:border-violet-400 outline-none px-1 py-0.5 min-w-0 w-28 sm:w-44" placeholder="페이지 이름">
+          <span id="pageTitleDisplay" class="student-only hidden ml-1.5 text-xs font-bold text-[#554A3E] truncate"></span>
+        </div>
+        <div class="flex items-center gap-1.5 teacher-only flex-shrink-0">
+          <button onclick="addNewPage()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">페이지 추가</span>
+          </button>
+          <button onclick="deleteCurrentPage()" class="text-[#A09282] hover:text-rose-600 p-1.5 rounded-xl transition" title="이 페이지 삭제">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- STUDENT TOP PANEL: always-visible topic + inline submission form -->
       <div id="studentTopPanel" class="student-only hidden mb-2 sm:mb-3 flex-shrink-0">
         <div class="bg-white rounded-3xl border-2 border-violet-100 shadow-sm p-4 sm:p-5">
@@ -271,7 +296,7 @@
               <i class="fa-solid fa-star"></i>
             </span>
             <div class="min-w-0">
-              <p class="text-[10px] font-black uppercase tracking-wider text-violet-500">🌱 오늘 배울 핵심 주제</p>
+              <p class="text-[10px] font-black uppercase tracking-wider text-violet-500">오늘 배울 핵심 주제</p>
               <h2 id="studentPanelTopicText" class="font-black text-[#38302A] whitespace-nowrap" data-max-size="18" data-min-size="12">오늘의 수업 주제를 입력하세요</h2>
             </div>
           </div>
@@ -290,8 +315,10 @@
               <div class="flex-1">
                 <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
                 <input type="text" id="studentPanelWords" placeholder="예: 개구리, 참나무, 버섯, 벼"
+                       oninput="updateWordPreview('studentPanelWords', 'studentPanelWordsPreview')"
                        onkeypress="if(event.key==='Enter') submitStudentPanelWords()"
                        class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none">
+                <div id="studentPanelWordsPreview"></div>
               </div>
             </div>
             <button onclick="submitStudentPanelWords()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl shadow-sm shadow-teal-200 transition flex items-center justify-center gap-1.5">
@@ -311,22 +338,22 @@
         <!-- 대형 파스텔 타이틀 배너 -->
         <div id="boardHeaderTitleBanner" class="absolute top-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[95%] text-center">
           <div onclick="openTopicModal()"
-               class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full">
+               class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 via-purple-50 to-pink-50 text-[#4A3A5C] px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-md shadow-violet-100/70 hover:shadow-lg border-2 border-violet-200 hover:border-violet-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full">
 
-            <span class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-sm text-yellow-200 flex items-center justify-center text-sm shadow-inner group-hover:rotate-12 transition-transform flex-shrink-0">
+            <span class="w-8 h-8 rounded-full bg-white text-violet-400 flex items-center justify-center text-sm shadow-sm group-hover:rotate-12 transition-transform flex-shrink-0">
               <i class="fa-solid fa-star"></i>
             </span>
 
             <div class="flex flex-col text-left min-w-0 pr-1">
-              <span class="text-[10px] font-black uppercase tracking-wider text-purple-100 flex items-center gap-1.5">
-                <span>🌱 오늘 배울 핵심 주제</span>
+              <span class="text-[10px] font-black uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
+                <span>오늘 배울 핵심 주제</span>
               </span>
-              <h2 id="boardCenterTopicText" class="font-black tracking-tight text-white drop-shadow-xs whitespace-nowrap" data-max-size="20" data-min-size="12">
+              <h2 id="boardCenterTopicText" class="font-black tracking-tight text-[#4A3A5C] whitespace-nowrap" data-max-size="20" data-min-size="12">
                 오늘의 수업 주제를 입력하세요
               </h2>
             </div>
 
-            <span class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center text-xs ml-auto transition flex-shrink-0">
+            <span class="w-7 h-7 rounded-full bg-white hover:bg-violet-100 text-violet-400 flex items-center justify-center text-xs ml-auto transition flex-shrink-0">
               <i class="fa-solid fa-pencil"></i>
             </span>
           </div>
@@ -474,7 +501,10 @@
 
         <div>
           <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
-          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들"
+                    oninput="updateWordPreview('modalStudentWords', 'modalStudentWordsPreview')"
+                    class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+          <div id="modalStudentWordsPreview"></div>
           <p class="text-[11px] text-[#9E9080] mt-1">
             💡 단어 사이에 쉼표(,)를 넣으면 여러 단어가 한 번에 쏙 등록됩니다!
           </p>
@@ -529,6 +559,17 @@
         </div>
       </div>
 
+      <div class="flex items-center gap-1.5 p-2.5 bg-violet-50/60 rounded-2xl border border-violet-200 mb-3">
+        <i class="fa-solid fa-cloud-arrow-down text-violet-500 pl-1"></i>
+        <input type="text" id="recoverRoomCodeInput" placeholder="다른 기기에서 쓰던 방 코드 입력 (예: 123456)" inputmode="numeric" pattern="[0-9]*"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+               onkeypress="if(event.key==='Enter') recoverProjectByRoomCode()"
+               class="flex-1 px-2.5 py-1.5 text-xs bg-white border border-violet-200 rounded-xl outline-none font-mono">
+        <button onclick="recoverProjectByRoomCode()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition flex-shrink-0">
+          코드로 불러오기
+        </button>
+      </div>
+
       <div id="projectListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 py-1 min-h-[200px]"></div>
 
       <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
@@ -551,13 +592,28 @@
 
   <!-- MODAL: New Project PIN Setup -->
   <div id="newProjectPinModal" class="hidden fixed inset-0 z-50 bg-[#352D26]/45 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-100 text-center">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-100 text-center max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center text-xl mb-3">
         <i class="fa-solid fa-key"></i>
       </div>
       <h3 class="text-base font-bold text-[#38302A] mb-1">이 프로젝트의 교사 PIN 설정</h3>
       <p class="text-xs text-[#7A6D5D] mb-4">결과 공개, 삭제 등 교사 기능을 쓸 때 필요해요.<br>나중에 "교사 PIN 변경"에서 바꿀 수 있어요.</p>
       <input type="password" id="newProjectPinInput" maxlength="6" class="w-full text-center tracking-[0.5em] text-xl font-black bg-[#FAF8F5] border-2 border-[#DFD5C5] rounded-2xl py-3 outline-none mb-4" placeholder="••••" onkeypress="if(event.key==='Enter') confirmNewProjectPin()">
+
+      <div class="text-left mb-4">
+        <label class="block text-xs font-bold text-[#554A3E] mb-1.5">학생 권한 (나중에 상단에서 바꿀 수 있어요)</label>
+        <div class="inline-flex w-full bg-[#F5EFE6] p-0.5 rounded-2xl border border-[#E5DCCE]">
+          <button type="button" onclick="selectNewProjectRole('viewer')" id="newProjRoleViewer" class="flex-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-[#8B7C6B] transition">뷰어</button>
+          <button type="button" onclick="selectNewProjectRole('contributor')" id="newProjRoleContributor" class="flex-1 px-2.5 py-1.5 rounded-xl text-xs font-black bg-white text-violet-700 shadow-2xs transition">작성자</button>
+          <button type="button" onclick="selectNewProjectRole('editor')" id="newProjRoleEditor" class="flex-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-[#8B7C6B] transition">편집자</button>
+        </div>
+      </div>
+
+      <label class="flex items-center gap-2 text-left mb-4 p-2.5 bg-[#FAF8F5] rounded-2xl border border-[#EAE2D5] cursor-pointer">
+        <input type="checkbox" id="newProjectRevealCheckbox" class="w-4 h-4 accent-violet-500">
+        <span class="text-xs font-bold text-[#554A3E]">처음부터 결과 공개하기 <span class="font-normal text-[#9E9080]">(체크 안 하면 비공개로 시작, 상단에서 언제든 바꿀 수 있어요)</span></span>
+      </label>
+
       <div class="flex justify-center gap-2">
         <button onclick="cancelNewProjectPin()" class="px-4 py-2 text-xs font-semibold text-[#6B5E4E] hover:bg-[#F5EFE6] rounded-xl">취소</button>
         <button onclick="confirmNewProjectPin()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl shadow">설정하고 보드 열기</button>
@@ -645,8 +701,8 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-[#38302A]">유사 낱말 자동 통합 현황</h3>
-            <p class="text-xs text-[#7A6D5D]">한국어 조사 및 복수형이 포함된 유사 낱말들이 대표어로 통합됩니다.</p>
+            <h3 class="text-base font-bold text-[#38302A]">유사 낱말 병합 관리</h3>
+            <p class="text-xs text-[#7A6D5D]">조사·복수형·오타는 자동으로 합쳐져요. 뜻은 같지만 표현이 많이 다른 낱말은 아래에서 체크해 직접 합쳐주세요.</p>
           </div>
         </div>
         <button onclick="closeMergeManager()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
@@ -656,7 +712,10 @@
 
       <div id="mergeListContainer" class="flex-1 overflow-y-auto space-y-2 py-2 pr-1"></div>
 
-      <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
+      <div class="flex justify-between items-center pt-3 border-t border-[#F0EAE1] mt-2">
+        <button onclick="mergeSelectedWords()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-2xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-object-group"></i> 체크한 낱말 합치기
+        </button>
         <button onclick="closeMergeManager()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl">닫기</button>
       </div>
     </div>
@@ -805,11 +864,11 @@
       }
     }
 
-    let fsDoc = null, fsSetDoc = null, fsOnSnapshot = null;
+    let fsDoc = null, fsSetDoc = null, fsOnSnapshot = null, fsGetDoc = null;
 
     async function initFirebaseCloud() {
       try {
-        const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, doc, setDoc, onSnapshot }] = await Promise.all([
+        const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, doc, setDoc, onSnapshot, getDoc }] = await Promise.all([
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
@@ -817,6 +876,7 @@
         fsDoc = doc;
         fsSetDoc = setDoc;
         fsOnSnapshot = onSnapshot;
+        fsGetDoc = getDoc;
 
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -860,15 +920,14 @@
             const data = docSnap.data();
             if (data && data._lastUpdater !== tabInstanceId) {
               const appState = window.appState;
-              if (data.topic) appState.topic = data.topic;
-              if (data.groups) appState.groups = data.groups;
-              if (data.wordPositions) appState.wordPositions = data.wordPositions;
-              if (data.drawings) appState.drawings = data.drawings;
-              if (data.submissions) appState.submissions = data.submissions;
-              if (data.isRevealed !== undefined) appState.isRevealed = data.isRevealed;
+              if (Array.isArray(data.pages) && data.pages.length) {
+                appState.pages = data.pages;
+                if (!appState.pages.find(pg => pg.id === appState.activePageId)) {
+                  appState.activePageId = appState.pages[0].id;
+                }
+              }
               if (data.studentRole) appState.studentRole = data.studentRole;
               if (data.theme) appState.theme = data.theme;
-              if (data.customMerges) appState.customMerges = data.customMerges;
 
               if (typeof window.syncTopicToUI === 'function') window.syncTopicToUI(appState.topic);
               if (typeof window.updateRevealBtnUI === 'function') window.updateRevealBtnUI();
@@ -891,15 +950,9 @@
         if (roomRef) {
           await fsSetDoc(roomRef, {
             roomCode: appState.roomCode,
-            topic: appState.topic,
             theme: appState.theme,
-            isRevealed: appState.isRevealed,
             studentRole: appState.studentRole,
-            submissions: appState.submissions,
-            groups: appState.groups,
-            wordPositions: appState.wordPositions,
-            drawings: appState.drawings,
-            customMerges: appState.customMerges,
+            pages: appState.pages,
             lastModified: new Date().toISOString(),
             _lastUpdater: tabInstanceId
           }, { merge: true });
@@ -910,6 +963,23 @@
     };
 
     window.startFirestoreListeners = startFirestoreListeners;
+
+    // 다른 브라우저/기기에서 만들었거나 열었던 프로젝트는 이 브라우저의 로컬
+    // 목록에는 없지만, 방 코드만 알면 클라우드에서 그 데이터를 한 번 읽어와
+    // 이 브라우저의 목록으로 복구할 수 있게 해준다. (실시간 구독이 아니라
+    // 1회성 조회이며, 이후 loadProject()가 실시간 구독을 새로 붙인다.)
+    window.fetchRoomFromFirestore = async function(roomCode) {
+      if (!db || !fsGetDoc || !roomCode) return null;
+      try {
+        const roomRef = getRoomDocRef(roomCode);
+        if (!roomRef) return null;
+        const snap = await fsGetDoc(roomRef);
+        return snap.exists() ? snap.data() : null;
+      } catch (err) {
+        console.warn("방 코드 조회 실패:", err);
+        return null;
+      }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
       initFirebaseCloud();
@@ -1062,6 +1132,7 @@
       const payload = {
         type: 'STATE_UPDATE',
         roomCode: appState.roomCode,
+        pageId: appState.activePageId,
         state: patchObj
       };
       if (broadcastChannel) {
@@ -1076,6 +1147,7 @@
       const payload = {
         type: 'NEW_SUBMISSION',
         roomCode: appState.roomCode,
+        pageId: appState.activePageId,
         submission: submissionObj,
         topic: appState.topic
       };
@@ -1094,13 +1166,15 @@
 
     function handleIncomingSyncMessage(data) {
       if (!data || data.roomCode !== appState.roomCode) return;
+      const targetPage = appState.pages.find(pg => pg.id === data.pageId) || getActivePage();
+      const isActivePage = targetPage.id === appState.activePageId;
 
       if (data.type === 'NEW_SUBMISSION' && data.submission) {
-        const idx = appState.submissions.findIndex(s => s.author === data.submission.author);
+        const idx = targetPage.submissions.findIndex(s => s.author === data.submission.author);
         if (idx !== -1) {
-          appState.submissions[idx] = data.submission;
+          targetPage.submissions[idx] = data.submission;
         } else {
-          appState.submissions.push(data.submission);
+          targetPage.submissions.push(data.submission);
         }
         autoSaveActiveProject();
         renderUnifiedBoard();
@@ -1108,8 +1182,8 @@
         showToast(`생각 도착: [${data.submission.author}] ${data.submission.rawText}`);
       } else if (data.type === 'STATE_UPDATE' && data.state) {
         if (data.state.isRevealed !== undefined) {
-          appState.isRevealed = data.state.isRevealed;
-          updateRevealBtnUI();
+          targetPage.isRevealed = data.state.isRevealed;
+          if (isActivePage) updateRevealBtnUI();
         }
         if (data.state.studentRole) {
           appState.studentRole = data.state.studentRole;
@@ -1117,18 +1191,20 @@
           applyStudentModeUI();
         }
         if (data.state.topic) {
-          appState.topic = data.state.topic;
-          syncTopicToUI(data.state.topic);
+          targetPage.topic = data.state.topic;
+          if (isActivePage) syncTopicToUI(data.state.topic);
         }
-        if (data.state.groups) appState.groups = data.state.groups;
-        if (data.state.wordPositions) appState.wordPositions = data.state.wordPositions;
+        if (data.state.groups) targetPage.groups = data.state.groups;
+        if (data.state.wordPositions) targetPage.wordPositions = data.state.wordPositions;
         renderUnifiedBoard();
       }
     }
 
     function normalizeKoreanWord(rawWord) {
       if (!rawWord) return "";
-      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+      // 공백 유무로 "생물요소"와 "생물 요소"가 다른 낱말로 갈리지 않도록,
+      // 비교용 정규화 단계에서는 내부 공백을 전부 제거한다.
+      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, '');
 
       const prefixes = ["다양한", "여러가지", "많은", "우리나라", "작은", "큰", "예쁜", "무서운", "귀여운"];
       for (const p of prefixes) {
@@ -1151,6 +1227,62 @@
       }
 
       return w;
+    }
+
+    function levenshteinDistance(a, b) {
+      if (a === b) return 0;
+      const alen = a.length, blen = b.length;
+      if (alen === 0) return blen;
+      if (blen === 0) return alen;
+      if (Math.abs(alen - blen) > 2) return 99;
+
+      let prev = Array.from({ length: blen + 1 }, (_, i) => i);
+      for (let i = 1; i <= alen; i++) {
+        const cur = [i];
+        for (let j = 1; j <= blen; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        }
+        prev = cur;
+      }
+      return prev[blen];
+    }
+
+    // 완전히 다른 표현(문장을 풀어쓴 경우 등)까지 의미상으로 묶어주는 건
+    // 실제 AI 모델 호출이 필요해서 이 정적 페이지에서는 안전하게 넣기 어렵고,
+    // 대신 오타/한두 글자 차이처럼 편집 거리가 가까운 낱말들을 자동으로
+    // 묶어준다. 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합칠 수 있다.
+    function mergeFuzzyClusters(clusters) {
+      const keys = Object.keys(clusters);
+      const absorbedKeys = new Set();
+
+      for (let i = 0; i < keys.length; i++) {
+        const keyA = keys[i];
+        if (absorbedKeys.has(keyA) || keyA.length < 3) continue;
+
+        for (let j = i + 1; j < keys.length; j++) {
+          const keyB = keys[j];
+          if (absorbedKeys.has(keyB) || keyB.length < 3) continue;
+
+          const maxAllowedDist = Math.min(keyA.length, keyB.length) >= 5 ? 2 : 1;
+          if (levenshteinDistance(keyA, keyB) > maxAllowedDist) continue;
+
+          const survivor = clusters[keyA].totalCount >= clusters[keyB].totalCount ? keyA : keyB;
+          const absorbed = survivor === keyA ? keyB : keyA;
+
+          clusters[survivor].totalCount += clusters[absorbed].totalCount;
+          Object.entries(clusters[absorbed].variants).forEach(([w, c]) => {
+            clusters[survivor].variants[w] = (clusters[survivor].variants[w] || 0) + c;
+          });
+          clusters[absorbed].students.forEach(s => clusters[survivor].students.add(s));
+          absorbedKeys.add(absorbed);
+
+          if (absorbed === keyA) break;
+        }
+      }
+
+      absorbedKeys.forEach(k => delete clusters[k]);
+      return clusters;
     }
 
     function calculateWordFrequencies() {
@@ -1190,6 +1322,8 @@
         }
       });
 
+      mergeFuzzyClusters(clusters);
+
       const result = [];
       Object.keys(clusters).forEach(normKey => {
         const cl = clusters[normKey];
@@ -1220,26 +1354,50 @@
     }
 
     // 전역 상태 객체
+    function createDefaultPage(title) {
+      return {
+        id: 'page_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        title: title || '페이지 1',
+        topic: title || "오늘의 수업 주제를 입력하세요",
+        isRevealed: false,
+        submissions: [],
+        wordPositions: {},
+        groups: [],
+        drawings: [],
+        autoMergeEnabled: true,
+        customMerges: {}
+      };
+    }
+
+    function getActivePage() {
+      return appState.pages.find(p => p.id === appState.activePageId) || appState.pages[0];
+    }
+
     let appState = {
       activeProjectId: '',
       roomCode: '',
-      topic: "오늘의 수업 주제를 입력하세요",
       theme: 'default',
-      isRevealed: false,
       studentRole: 'contributor',
       isTeacherAuthenticated: true,
       teacherPin: "1234",
       isStudentView: false,
-      submissions: [],
-      wordPositions: {},
-      groups: [
-        { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
-        { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
-      ],
-      drawings: [],
-      autoMergeEnabled: true,
-      customMerges: {}
+      pages: [createDefaultPage('페이지 1')],
+      activePageId: null
     };
+    appState.activePageId = appState.pages[0].id;
+
+    // 기존 코드 대부분이 appState.topic / appState.submissions 등을 직접 읽고 쓰도록
+    // 짜여 있어서, 이 필드들을 "현재 활성 페이지"로 투명하게 연결해주는 접근자를 둔다.
+    // 이렇게 하면 페이지 기능을 추가하면서도 기존 함수들을 거의 건드릴 필요가 없다.
+    ['topic', 'isRevealed', 'submissions', 'wordPositions', 'groups', 'drawings', 'autoMergeEnabled', 'customMerges'].forEach((key) => {
+      Object.defineProperty(appState, key, {
+        get() { return getActivePage()[key]; },
+        set(v) { getActivePage()[key] = v; },
+        configurable: true,
+        enumerable: true
+      });
+    });
+
     window.appState = appState;
 
     let selectedDetailWord = null;
@@ -1362,6 +1520,8 @@
       const emptyMsg = document.getElementById('emptyCloudMsg');
       const hiddenOverlay = document.getElementById('hiddenScreenOverlay');
       if (!canvasEl) return;
+
+      renderPageSwitcher();
 
       const words = calculateWordFrequencies();
 
@@ -1543,7 +1703,22 @@
         if (emptyLabel) emptyLabel.style.display = count > 0 ? 'none' : 'block';
       });
 
-      redrawAllDrawings();
+      fitBoardHeightToContent();
+      initDrawingCanvas();
+    }
+
+    // 낱말/그룹이 늘어나 화면 아래로 넘치면 보드 안에서 잘리지 않고,
+    // 보드 자체 높이가 늘어나서 페이지를 스크롤해 볼 수 있도록 한다.
+    function fitBoardHeightToContent() {
+      const canvasEl = document.getElementById('unifiedBoardCanvas');
+      if (!canvasEl) return;
+      let maxBottom = 0;
+      canvasEl.querySelectorAll('.canvas-item-node.absolute').forEach(el => {
+        const top = parseFloat(el.style.top) || 0;
+        const height = el.offsetHeight || 0;
+        maxBottom = Math.max(maxBottom, top + height);
+      });
+      canvasEl.style.minHeight = Math.max(460, maxBottom + 60) + 'px';
     }
 
     function setupDraggableWord(element, wordKey, isInsideGroup) {
@@ -2171,6 +2346,33 @@
       document.getElementById('studentModal').classList.add('hidden');
     }
 
+    function updateWordPreview(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+
+      const raw = input.value;
+      if (!raw.trim()) {
+        preview.innerHTML = '';
+        return;
+      }
+
+      const tokens = raw.split(',').map(s => s.trim()).filter(Boolean);
+      const looksLikeMissingComma = tokens.length === 1 && /\s/.test(tokens[0].trim()) && tokens[0].trim().length > 6;
+
+      const chips = tokens.map(t =>
+        `<span class="inline-block bg-white border border-emerald-300 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-lg">${t}</span>`
+      ).join(' ');
+
+      let html = `<div class="flex flex-wrap gap-1 mt-1.5">${chips}</div>`;
+      if (looksLikeMissingComma) {
+        html += `<div class="mt-1 text-[11px] text-rose-600 font-bold">⚠️ 쉼표(,) 없이 입력하신 것 같아요! 낱말 사이마다 쉼표를 넣어야 각각 따로 등록돼요.</div>`;
+      } else {
+        html += `<div class="mt-1 text-[11px] text-[#9E9080]">👆 이렇게 <b>${tokens.length}개</b> 낱말로 나뉘어 제출됩니다.</div>`;
+      }
+      preview.innerHTML = html;
+    }
+
     function performStudentSubmission(rawNum, words) {
       if (!rawNum) {
         alert("학생 번호(숫자)를 입력해주세요!");
@@ -2216,6 +2418,7 @@
 
       if (performStudentSubmission(rawNum, words)) {
         document.getElementById('modalStudentWords').value = '';
+        document.getElementById('modalStudentWordsPreview').innerHTML = '';
         closeStudentModal();
       }
     }
@@ -2227,6 +2430,7 @@
       if (performStudentSubmission(rawNum, words)) {
         document.getElementById('studentPanelNumber').value = '';
         document.getElementById('studentPanelWords').value = '';
+        document.getElementById('studentPanelWordsPreview').innerHTML = '';
       }
     }
 
@@ -2683,14 +2887,11 @@
       }
       const p = projectsDatabase[appState.activeProjectId];
       p.roomCode = appState.roomCode;
-      p.topic = appState.topic;
       p.theme = appState.theme;
       p.teacherPin = appState.teacherPin;
-      p.submissions = appState.submissions;
-      p.wordPositions = appState.wordPositions;
-      p.groups = appState.groups;
-      p.drawings = appState.drawings;
-      p.customMerges = appState.customMerges;
+      p.studentRole = appState.studentRole;
+      p.pages = appState.pages;
+      delete p.topic; delete p.submissions; delete p.wordPositions; delete p.groups; delete p.drawings; delete p.customMerges;
       p.lastModified = new Date().toISOString();
       saveDatabaseToStorage();
 
@@ -2730,8 +2931,12 @@
       const sorted = keys.map(k => projectsDatabase[k]).sort((a,b) => new Date(b.lastModified) - new Date(a.lastModified));
       sorted.forEach(proj => {
         const isActive = proj.id === appState.activeProjectId;
-        const studentCount = new Set((proj.submissions || []).map(s => s.author || '익명')).size;
-        const totalWords = (proj.submissions || []).reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
+        const pages = Array.isArray(proj.pages) && proj.pages.length ? proj.pages : [{ topic: proj.topic, submissions: proj.submissions || [] }];
+        const allSubmissions = pages.flatMap(pg => pg.submissions || []);
+        const studentCount = new Set(allSubmissions.map(s => s.author || '익명')).size;
+        const totalWords = allSubmissions.reduce((acc, s) => acc + (s.rawText || '').split(',').filter(Boolean).length, 0);
+        const firstTopic = pages[0].topic || '(주제 없음)';
+        const topicLabel = pages.length > 1 ? `${firstTopic} 외 ${pages.length - 1}페이지` : firstTopic;
 
         const card = document.createElement('div');
         card.className = `p-3.5 rounded-3xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${isActive ? 'bg-violet-50 border-violet-300 ring-2 ring-violet-200' : 'bg-[#FAF8F5] hover:bg-[#F5EFE6] border-[#EAE2D5]'}`;
@@ -2740,8 +2945,9 @@
             <div class="flex items-center gap-2 mb-0.5">
               <span class="font-black text-[#38302A] text-sm truncate">${proj.name}</span>
               ${isActive ? '<span class="bg-violet-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">진행 중</span>' : ''}
+              ${pages.length > 1 ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full">${pages.length}페이지</span>` : ''}
             </div>
-            <p class="text-xs text-[#6B5E4E] font-bold mb-1 truncate">주제: <span class="text-violet-700">${proj.topic}</span></p>
+            <p class="text-xs text-[#6B5E4E] font-bold mb-1 truncate">주제: <span class="text-violet-700">${topicLabel}</span></p>
             <div class="text-[11px] text-[#8C7D6C] font-medium">
               <span>코드: ${proj.roomCode || '---'}</span> • <span>${studentCount}명 참여</span> • <span>${totalWords}개 단어</span>
             </div>
@@ -2755,6 +2961,73 @@
         `;
         list.appendChild(card);
       });
+    }
+
+    async function recoverProjectByRoomCode() {
+      const input = document.getElementById('recoverRoomCodeInput');
+      const code = (input.value || '').trim();
+      if (!code) {
+        showToast("방 코드를 입력해주세요.");
+        return;
+      }
+
+      const existing = Object.values(projectsDatabase).find(p => p.roomCode === code);
+      if (existing) {
+        input.value = '';
+        loadProject(existing.id);
+        showToast("이미 목록에 있는 프로젝트라 바로 불러왔습니다.");
+        return;
+      }
+
+      if (typeof window.fetchRoomFromFirestore !== 'function') {
+        showToast("클라우드 연결이 아직 준비 중입니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      showToast("클라우드에서 조회 중...");
+      const data = await window.fetchRoomFromFirestore(code);
+      if (!data) {
+        showToast(`코드 ${code}에 해당하는 프로젝트를 찾을 수 없습니다.`);
+        return;
+      }
+
+      let pages;
+      if (Array.isArray(data.pages) && data.pages.length) {
+        pages = data.pages;
+      } else {
+        // 페이지 기능 이전(단일 보드) 형식으로 저장된 방을 페이지 1개로 이관한다.
+        pages = [{
+          id: 'page_1',
+          title: '페이지 1',
+          topic: data.topic || "오늘의 수업 주제를 입력하세요",
+          isRevealed: !!data.isRevealed,
+          submissions: data.submissions || [],
+          wordPositions: data.wordPositions || {},
+          groups: data.groups || [
+            { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+            { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+          ],
+          drawings: data.drawings || [],
+          autoMergeEnabled: true,
+          customMerges: data.customMerges || {}
+        }];
+      }
+
+      const newId = 'proj_recovered_' + Date.now();
+      projectsDatabase[newId] = {
+        id: newId,
+        roomCode: code,
+        name: pages[0].topic ? `${pages[0].topic} (복구됨)` : `코드 ${code} 프로젝트`,
+        theme: data.theme || 'default',
+        teacherPin: '1234',
+        studentRole: data.studentRole || 'contributor',
+        pages: pages,
+        lastModified: new Date().toISOString()
+      };
+      saveDatabaseToStorage();
+      input.value = '';
+      loadProject(newId);
+      showToast("프로젝트를 불러왔습니다! 교사 PIN은 기본값(1234)이니 확인 후 변경해주세요.");
     }
 
     function openProjectPrompt(title, defaultVal, callback) {
@@ -2778,13 +3051,32 @@
     }
 
     let pendingNewProjectTitle = null;
+    let pendingNewProjectRole = 'contributor';
 
     function openPromptNewProjectModal() {
       openProjectPrompt("새 수업 프로젝트 제목 입력", "새 수업 프로젝트", (title) => {
         if (!title) return;
         pendingNewProjectTitle = title;
+        pendingNewProjectRole = 'contributor';
         document.getElementById('newProjectPinInput').value = '';
+        document.getElementById('newProjectRevealCheckbox').checked = false;
+        selectNewProjectRole('contributor');
         document.getElementById('newProjectPinModal').classList.remove('hidden');
+      });
+    }
+
+    function selectNewProjectRole(role) {
+      pendingNewProjectRole = role;
+      const map = {
+        viewer: document.getElementById('newProjRoleViewer'),
+        contributor: document.getElementById('newProjRoleContributor'),
+        editor: document.getElementById('newProjRoleEditor')
+      };
+      Object.entries(map).forEach(([key, btn]) => {
+        if (!btn) return;
+        btn.className = key === role
+          ? "flex-1 px-2.5 py-1.5 rounded-xl text-xs font-black bg-white text-violet-700 shadow-2xs transition"
+          : "flex-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-[#8B7C6B] transition";
       });
     }
 
@@ -2801,24 +3093,22 @@
         return;
       }
       const title = pendingNewProjectTitle;
+      const role = pendingNewProjectRole;
+      const startRevealed = document.getElementById('newProjectRevealCheckbox').checked;
       pendingNewProjectTitle = null;
 
       const newId = 'proj_' + Date.now();
+      const firstPage = createDefaultPage(title);
+      firstPage.title = '페이지 1';
+      firstPage.isRevealed = startRevealed;
       projectsDatabase[newId] = {
         id: newId,
         roomCode: generateRoomCode(),
         name: title,
-        topic: title,
         theme: 'default',
         teacherPin: pin,
-        submissions: [],
-        wordPositions: {},
-        groups: [
-          { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
-          { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
-        ],
-        drawings: [],
-        customMerges: {},
+        studentRole: role,
+        pages: [firstPage],
         lastModified: new Date().toISOString()
       };
       saveDatabaseToStorage();
@@ -2829,24 +3119,123 @@
       showToast(`'${title}' 새 프로젝트가 생성되었습니다.`);
     }
 
+    function renderPageSwitcher() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      const total = appState.pages.length;
+      const cur = document.getElementById('pageIndicatorCurrent');
+      const tot = document.getElementById('pageIndicatorTotal');
+      if (cur) cur.innerText = idx >= 0 ? idx + 1 : 1;
+      if (tot) tot.innerText = total;
+
+      const page = getActivePage();
+      const titleInput = document.getElementById('pageTitleInput');
+      const titleDisplay = document.getElementById('pageTitleDisplay');
+      if (titleInput) titleInput.value = page.title || '';
+      if (titleDisplay) titleDisplay.innerText = page.title || '';
+
+      const prevBtn = document.getElementById('pagePrevBtn');
+      const nextBtn = document.getElementById('pageNextBtn');
+      if (prevBtn) prevBtn.disabled = idx <= 0;
+      if (nextBtn) nextBtn.disabled = idx >= total - 1;
+    }
+
+    function switchToPage(pageId) {
+      if (!appState.pages.find(pg => pg.id === pageId)) return;
+      appState.activePageId = pageId;
+      renderPageSwitcher();
+      syncTopicToUI(appState.topic);
+      updateRevealBtnUI();
+      renderUnifiedBoard();
+    }
+
+    function goToPrevPage() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      if (idx > 0) switchToPage(appState.pages[idx - 1].id);
+    }
+
+    function goToNextPage() {
+      const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+      if (idx < appState.pages.length - 1) switchToPage(appState.pages[idx + 1].id);
+    }
+
+    function addNewPage() {
+      requireTeacherAuth(() => {
+        const newPage = createDefaultPage(`페이지 ${appState.pages.length + 1}`);
+        appState.pages.push(newPage);
+        switchToPage(newPage.id);
+        autoSaveActiveProject();
+        playPopSound(720);
+        showToast("새 페이지가 추가되었습니다.");
+      });
+    }
+
+    function deleteCurrentPage() {
+      requireTeacherAuth(() => {
+        if (appState.pages.length <= 1) {
+          showToast("최소 1개의 페이지는 유지되어야 합니다.");
+          return;
+        }
+        if (!confirm("이 페이지와 그 안의 모든 제출·그룹·판서가 삭제됩니다. 계속할까요?")) return;
+
+        const idx = appState.pages.findIndex(pg => pg.id === appState.activePageId);
+        appState.pages.splice(idx, 1);
+        appState.activePageId = appState.pages[Math.max(0, idx - 1)].id;
+
+        renderPageSwitcher();
+        syncTopicToUI(appState.topic);
+        updateRevealBtnUI();
+        renderUnifiedBoard();
+        autoSaveActiveProject();
+        showToast("페이지가 삭제되었습니다.");
+      });
+    }
+
+    function renamePage(newTitle) {
+      const t = (newTitle || '').trim();
+      if (!t) { renderPageSwitcher(); return; }
+      getActivePage().title = t;
+      renderPageSwitcher();
+      autoSaveActiveProject();
+    }
+
     function loadProject(projectId) {
       if (!projectsDatabase[projectId]) return;
       autoSaveActiveProject();
       const p = projectsDatabase[projectId];
       appState.activeProjectId = p.id;
       appState.roomCode = p.roomCode || generateRoomCode();
-      appState.topic = p.topic || p.name;
       appState.theme = p.theme || 'default';
       appState.teacherPin = p.teacherPin || '1234';
-      appState.submissions = p.submissions || [];
-      appState.wordPositions = p.wordPositions || {};
-      appState.groups = p.groups || [];
-      appState.drawings = p.drawings || [];
-      appState.customMerges = p.customMerges || {};
+      appState.studentRole = p.studentRole || 'contributor';
+
+      if (Array.isArray(p.pages) && p.pages.length) {
+        appState.pages = p.pages;
+      } else {
+        // 페이지 기능 이전에 저장된 예전 형식(단일 보드)을 페이지 1개로 이관한다.
+        appState.pages = [{
+          id: 'page_1',
+          title: '페이지 1',
+          topic: p.topic || p.name || "오늘의 수업 주제를 입력하세요",
+          isRevealed: false,
+          submissions: p.submissions || [],
+          wordPositions: p.wordPositions || {},
+          groups: p.groups || [
+            { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+            { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+          ],
+          drawings: p.drawings || [],
+          autoMergeEnabled: true,
+          customMerges: p.customMerges || {}
+        }];
+      }
+      appState.activePageId = appState.pages[0].id;
 
       syncTopicToUI(appState.topic);
       document.getElementById('headerRoomCode').innerText = appState.roomCode;
       updateActiveProjectBadge();
+      updateTeacherRoleBarUI(appState.studentRole);
+      updateRevealBtnUI();
+      renderPageSwitcher();
       renderUnifiedBoard();
       closeProjectModal();
       playPopSound(750);
@@ -2984,7 +3373,7 @@
       } else {
         board.className = "flex-1 pastel-grid-bg rounded-3xl border-2 border-[#E8DFCFA] shadow-sm relative overflow-hidden flex flex-col min-h-[540px]";
         if (banner) {
-          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-400 text-white px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-purple-200/50 hover:shadow-xl border-2 border-white/60 hover:border-yellow-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full";
+          banner.firstElementChild.className = "cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 via-purple-50 to-pink-50 text-[#4A3A5C] px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-md shadow-violet-100/70 hover:shadow-lg border-2 border-violet-200 hover:border-violet-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full";
         }
       }
       renderUnifiedBoard();
@@ -3018,14 +3407,17 @@
         list.innerHTML = `<p class="text-center text-[#A09282] py-6 text-xs">등록된 단어가 없습니다.</p>`;
       } else {
         words.forEach(w => {
-          const row = document.createElement('div');
-          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center justify-between gap-2";
+          const row = document.createElement('label');
+          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center gap-2.5 cursor-pointer hover:bg-[#F5EFE6] transition";
           row.innerHTML = `
-            <div>
-              <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
-              <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
+            <input type="checkbox" class="merge-select-checkbox w-4 h-4 accent-emerald-500 flex-shrink-0" data-normkey="${w.normKey || w.representative}">
+            <div class="flex-1 min-w-0">
+              <div>
+                <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
+                <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
+              </div>
+              <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
             </div>
-            <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
           `;
           list.appendChild(row);
         });
@@ -3033,6 +3425,36 @@
       modal.classList.remove('hidden');
     }
     function closeMergeManager() { document.getElementById('mergeManagerModal').classList.add('hidden'); }
+
+    function mergeSelectedWords() {
+      const checked = Array.from(document.querySelectorAll('.merge-select-checkbox:checked'));
+      if (checked.length < 2) {
+        showToast("합칠 낱말을 2개 이상 체크해주세요.");
+        return;
+      }
+
+      const words = calculateWordFrequencies();
+      const selectedNormKeys = checked.map(cb => cb.dataset.normkey);
+      const selectedClusters = selectedNormKeys
+        .map(key => words.find(w => (w.normKey || w.representative) === key))
+        .filter(Boolean);
+      if (selectedClusters.length < 2) return;
+
+      selectedClusters.sort((a, b) => b.totalCount - a.totalCount);
+      const target = selectedClusters[0];
+      const others = selectedClusters.slice(1);
+
+      others.forEach(cl => {
+        cl.synonyms.forEach(s => {
+          appState.customMerges[s.word] = target.normKey || target.representative;
+        });
+      });
+
+      autoSaveActiveProject();
+      renderUnifiedBoard();
+      openMergeManager();
+      showToast(`'${target.representative}'(으)로 ${selectedClusters.length}개 낱말을 합쳤습니다.`);
+    }
 
     function openResetModal() { toggleMenu(false); document.getElementById('resetModal').classList.remove('hidden'); }
     function closeResetModal() { document.getElementById('resetModal').classList.add('hidden'); }
