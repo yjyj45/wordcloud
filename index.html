@@ -1200,11 +1200,49 @@
       }
     }
 
+    // 자음/모음이 완성된 글자로 조합되지 못한 채 따로 입력된 경우
+    // (예: "생ㅁㅜㄹ" → "생물") 온전한 한글 음절로 다시 합쳐준다.
+    // "ㅋㅋㅋ", "ㅇㅇ"처럼 자음/모음만으로 이루어진 표현은 뒤에 모음이
+    // 오지 않으므로 그대로 유지된다.
+    const HANGUL_CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const HANGUL_JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+    const HANGUL_JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+    function composeHangulJamo(str) {
+      const chars = Array.from(str);
+      let result = '';
+      let i = 0;
+      while (i < chars.length) {
+        const choIdx = HANGUL_CHO.indexOf(chars[i]);
+        if (choIdx !== -1 && i + 1 < chars.length) {
+          const jungIdx = HANGUL_JUNG.indexOf(chars[i + 1]);
+          if (jungIdx !== -1) {
+            let jongIdx = 0;
+            let consumed = 2;
+            if (i + 2 < chars.length) {
+              const jongCandidate = HANGUL_JONG.indexOf(chars[i + 2]);
+              const followedByVowel = (i + 3 < chars.length) && HANGUL_JUNG.indexOf(chars[i + 3]) !== -1;
+              if (jongCandidate > 0 && !followedByVowel) {
+                jongIdx = jongCandidate;
+                consumed = 3;
+              }
+            }
+            result += String.fromCharCode(0xAC00 + (choIdx * 21 + jungIdx) * 28 + jongIdx);
+            i += consumed;
+            continue;
+          }
+        }
+        result += chars[i];
+        i += 1;
+      }
+      return result;
+    }
+
     function normalizeKoreanWord(rawWord) {
       if (!rawWord) return "";
       // 공백 유무로 "생물요소"와 "생물 요소"가 다른 낱말로 갈리지 않도록,
       // 비교용 정규화 단계에서는 내부 공백을 전부 제거한다.
-      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, '');
+      let w = composeHangulJamo(rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, ''));
 
       const prefixes = ["다양한", "여러가지", "많은", "우리나라", "작은", "큰", "예쁜", "무서운", "귀여운"];
       for (const p of prefixes) {
@@ -1253,6 +1291,11 @@
     // 대신 길이가 같고 글자 하나만 다른(=오타로 보이는) 낱말만 자동으로 묶어준다.
     // 글자가 추가/삭제된 경우(예: "생물요소"↔"비생물요소")는 접두사 하나 차이로
     // 뜻이 완전히 달라지는 경우가 많아 자동 병합 대상에서 제외한다.
+    // (자모가 낱개로 입력된 "생ㅁㅜㄹ" 같은 경우는 여기 도달하기 전
+    // normalizeKoreanWord의 composeHangulJamo 단계에서 이미 "생물"과
+    // 똑같은 글자로 합쳐지므로 별도 처리가 필요 없다.)
+    // 한 글자짜리 낱말은 하나만 달라도 완전히 다른 뜻이 되는 경우가 매우 많아
+    // (예: "물"/"불") 자동 병합 대상에서 제외한다.
     // 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합치거나 분리할 수 있다.
     function mergeFuzzyClusters(clusters) {
       const keys = Object.keys(clusters);
@@ -1261,11 +1304,11 @@
 
       for (let i = 0; i < keys.length; i++) {
         const keyA = keys[i];
-        if (absorbedKeys.has(keyA) || keyA.length < 3 || excluded.has(keyA)) continue;
+        if (absorbedKeys.has(keyA) || keyA.length < 2 || excluded.has(keyA)) continue;
 
         for (let j = i + 1; j < keys.length; j++) {
           const keyB = keys[j];
-          if (absorbedKeys.has(keyB) || keyB.length < 3 || excluded.has(keyB)) continue;
+          if (absorbedKeys.has(keyB) || keyB.length < 2 || excluded.has(keyB)) continue;
           if (keyA.length !== keyB.length) continue;
           if (levenshteinDistance(keyA, keyB) !== 1) continue;
 
