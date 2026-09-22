@@ -554,6 +554,17 @@
         </div>
       </div>
 
+      <div class="flex items-center gap-1.5 p-2.5 bg-violet-50/60 rounded-2xl border border-violet-200 mb-3">
+        <i class="fa-solid fa-cloud-arrow-down text-violet-500 pl-1"></i>
+        <input type="text" id="recoverRoomCodeInput" placeholder="다른 기기에서 쓰던 방 코드 입력 (예: 123456)" inputmode="numeric" pattern="[0-9]*"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+               onkeypress="if(event.key==='Enter') recoverProjectByRoomCode()"
+               class="flex-1 px-2.5 py-1.5 text-xs bg-white border border-violet-200 rounded-xl outline-none font-mono">
+        <button onclick="recoverProjectByRoomCode()" class="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition flex-shrink-0">
+          코드로 불러오기
+        </button>
+      </div>
+
       <div id="projectListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 py-1 min-h-[200px]"></div>
 
       <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
@@ -830,11 +841,11 @@
       }
     }
 
-    let fsDoc = null, fsSetDoc = null, fsOnSnapshot = null;
+    let fsDoc = null, fsSetDoc = null, fsOnSnapshot = null, fsGetDoc = null;
 
     async function initFirebaseCloud() {
       try {
-        const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, doc, setDoc, onSnapshot }] = await Promise.all([
+        const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, doc, setDoc, onSnapshot, getDoc }] = await Promise.all([
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
@@ -842,6 +853,7 @@
         fsDoc = doc;
         fsSetDoc = setDoc;
         fsOnSnapshot = onSnapshot;
+        fsGetDoc = getDoc;
 
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -928,6 +940,23 @@
     };
 
     window.startFirestoreListeners = startFirestoreListeners;
+
+    // 다른 브라우저/기기에서 만들었거나 열었던 프로젝트는 이 브라우저의 로컬
+    // 목록에는 없지만, 방 코드만 알면 클라우드에서 그 데이터를 한 번 읽어와
+    // 이 브라우저의 목록으로 복구할 수 있게 해준다. (실시간 구독이 아니라
+    // 1회성 조회이며, 이후 loadProject()가 실시간 구독을 새로 붙인다.)
+    window.fetchRoomFromFirestore = async function(roomCode) {
+      if (!db || !fsGetDoc || !roomCode) return null;
+      try {
+        const roomRef = getRoomDocRef(roomCode);
+        if (!roomRef) return null;
+        const snap = await fsGetDoc(roomRef);
+        return snap.exists() ? snap.data() : null;
+      } catch (err) {
+        console.warn("방 코드 조회 실패:", err);
+        return null;
+      }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
       initFirebaseCloud();
@@ -2808,6 +2837,73 @@
         `;
         list.appendChild(card);
       });
+    }
+
+    async function recoverProjectByRoomCode() {
+      const input = document.getElementById('recoverRoomCodeInput');
+      const code = (input.value || '').trim();
+      if (!code) {
+        showToast("방 코드를 입력해주세요.");
+        return;
+      }
+
+      const existing = Object.values(projectsDatabase).find(p => p.roomCode === code);
+      if (existing) {
+        input.value = '';
+        loadProject(existing.id);
+        showToast("이미 목록에 있는 프로젝트라 바로 불러왔습니다.");
+        return;
+      }
+
+      if (typeof window.fetchRoomFromFirestore !== 'function') {
+        showToast("클라우드 연결이 아직 준비 중입니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      showToast("클라우드에서 조회 중...");
+      const data = await window.fetchRoomFromFirestore(code);
+      if (!data) {
+        showToast(`코드 ${code}에 해당하는 프로젝트를 찾을 수 없습니다.`);
+        return;
+      }
+
+      let pages;
+      if (Array.isArray(data.pages) && data.pages.length) {
+        pages = data.pages;
+      } else {
+        // 페이지 기능 이전(단일 보드) 형식으로 저장된 방을 페이지 1개로 이관한다.
+        pages = [{
+          id: 'page_1',
+          title: '페이지 1',
+          topic: data.topic || "오늘의 수업 주제를 입력하세요",
+          isRevealed: !!data.isRevealed,
+          submissions: data.submissions || [],
+          wordPositions: data.wordPositions || {},
+          groups: data.groups || [
+            { id: 'grp_1', title: '1모둠 바구니', color: 'bg-[#EBF7EE] border-[#C3E8CB] text-[#2D5A36]', x: 30, y: 80, width: 280, height: 260 },
+            { id: 'grp_2', title: '2모둠 바구니', color: 'bg-[#FFF9E6] border-[#FBE39D] text-[#6B5018]', x: 340, y: 80, width: 280, height: 260 }
+          ],
+          drawings: data.drawings || [],
+          autoMergeEnabled: true,
+          customMerges: data.customMerges || {}
+        }];
+      }
+
+      const newId = 'proj_recovered_' + Date.now();
+      projectsDatabase[newId] = {
+        id: newId,
+        roomCode: code,
+        name: pages[0].topic ? `${pages[0].topic} (복구됨)` : `코드 ${code} 프로젝트`,
+        theme: data.theme || 'default',
+        teacherPin: '1234',
+        studentRole: data.studentRole || 'contributor',
+        pages: pages,
+        lastModified: new Date().toISOString()
+      };
+      saveDatabaseToStorage();
+      input.value = '';
+      loadProject(newId);
+      showToast("프로젝트를 불러왔습니다! 교사 PIN은 기본값(1234)이니 확인 후 변경해주세요.");
     }
 
     function openProjectPrompt(title, defaultVal, callback) {
