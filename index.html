@@ -83,7 +83,7 @@
     }
   </style>
 </head>
-<body class="bg-[#FDFBF7] text-[#4A4036] min-h-screen flex flex-col overflow-hidden">
+<body class="bg-[#FDFBF7] text-[#4A4036] min-h-screen flex flex-col">
 
   <!-- MAIN APP CONTAINER -->
   <div id="teacherAppRoot" class="flex-1 flex flex-col min-h-0">
@@ -315,8 +315,10 @@
               <div class="flex-1">
                 <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
                 <input type="text" id="studentPanelWords" placeholder="예: 개구리, 참나무, 버섯, 벼"
+                       oninput="updateWordPreview('studentPanelWords', 'studentPanelWordsPreview')"
                        onkeypress="if(event.key==='Enter') submitStudentPanelWords()"
                        class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none">
+                <div id="studentPanelWordsPreview"></div>
               </div>
             </div>
             <button onclick="submitStudentPanelWords()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl shadow-sm shadow-teal-200 transition flex items-center justify-center gap-1.5">
@@ -499,7 +501,10 @@
 
         <div>
           <label class="block text-xs font-bold text-[#554A3E] mb-1">생각 낱말들 (쉼표로 구분)</label>
-          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들" class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+          <textarea id="modalStudentWords" rows="3" placeholder="예: 개구리, 참나무, 버섯, 벼, 다양한 곤충들"
+                    oninput="updateWordPreview('modalStudentWords', 'modalStudentWordsPreview')"
+                    class="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#DFD5C5] rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+          <div id="modalStudentWordsPreview"></div>
           <p class="text-[11px] text-[#9E9080] mt-1">
             💡 단어 사이에 쉼표(,)를 넣으면 여러 단어가 한 번에 쏙 등록됩니다!
           </p>
@@ -681,8 +686,8 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-[#38302A]">유사 낱말 자동 통합 현황</h3>
-            <p class="text-xs text-[#7A6D5D]">한국어 조사 및 복수형이 포함된 유사 낱말들이 대표어로 통합됩니다.</p>
+            <h3 class="text-base font-bold text-[#38302A]">유사 낱말 병합 관리</h3>
+            <p class="text-xs text-[#7A6D5D]">조사·복수형·오타는 자동으로 합쳐져요. 뜻은 같지만 표현이 많이 다른 낱말은 아래에서 체크해 직접 합쳐주세요.</p>
           </div>
         </div>
         <button onclick="closeMergeManager()" class="text-[#A09282] hover:text-[#38302A] text-lg p-1">
@@ -692,7 +697,10 @@
 
       <div id="mergeListContainer" class="flex-1 overflow-y-auto space-y-2 py-2 pr-1"></div>
 
-      <div class="flex justify-end pt-3 border-t border-[#F0EAE1] mt-2">
+      <div class="flex justify-between items-center pt-3 border-t border-[#F0EAE1] mt-2">
+        <button onclick="mergeSelectedWords()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-2xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-object-group"></i> 체크한 낱말 합치기
+        </button>
         <button onclick="closeMergeManager()" class="bg-violet-500 text-white text-xs font-bold px-5 py-2 rounded-2xl">닫기</button>
       </div>
     </div>
@@ -1179,7 +1187,9 @@
 
     function normalizeKoreanWord(rawWord) {
       if (!rawWord) return "";
-      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+      // 공백 유무로 "생물요소"와 "생물 요소"가 다른 낱말로 갈리지 않도록,
+      // 비교용 정규화 단계에서는 내부 공백을 전부 제거한다.
+      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, '');
 
       const prefixes = ["다양한", "여러가지", "많은", "우리나라", "작은", "큰", "예쁜", "무서운", "귀여운"];
       for (const p of prefixes) {
@@ -1202,6 +1212,62 @@
       }
 
       return w;
+    }
+
+    function levenshteinDistance(a, b) {
+      if (a === b) return 0;
+      const alen = a.length, blen = b.length;
+      if (alen === 0) return blen;
+      if (blen === 0) return alen;
+      if (Math.abs(alen - blen) > 2) return 99;
+
+      let prev = Array.from({ length: blen + 1 }, (_, i) => i);
+      for (let i = 1; i <= alen; i++) {
+        const cur = [i];
+        for (let j = 1; j <= blen; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        }
+        prev = cur;
+      }
+      return prev[blen];
+    }
+
+    // 완전히 다른 표현(문장을 풀어쓴 경우 등)까지 의미상으로 묶어주는 건
+    // 실제 AI 모델 호출이 필요해서 이 정적 페이지에서는 안전하게 넣기 어렵고,
+    // 대신 오타/한두 글자 차이처럼 편집 거리가 가까운 낱말들을 자동으로
+    // 묶어준다. 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합칠 수 있다.
+    function mergeFuzzyClusters(clusters) {
+      const keys = Object.keys(clusters);
+      const absorbedKeys = new Set();
+
+      for (let i = 0; i < keys.length; i++) {
+        const keyA = keys[i];
+        if (absorbedKeys.has(keyA) || keyA.length < 3) continue;
+
+        for (let j = i + 1; j < keys.length; j++) {
+          const keyB = keys[j];
+          if (absorbedKeys.has(keyB) || keyB.length < 3) continue;
+
+          const maxAllowedDist = Math.min(keyA.length, keyB.length) >= 5 ? 2 : 1;
+          if (levenshteinDistance(keyA, keyB) > maxAllowedDist) continue;
+
+          const survivor = clusters[keyA].totalCount >= clusters[keyB].totalCount ? keyA : keyB;
+          const absorbed = survivor === keyA ? keyB : keyA;
+
+          clusters[survivor].totalCount += clusters[absorbed].totalCount;
+          Object.entries(clusters[absorbed].variants).forEach(([w, c]) => {
+            clusters[survivor].variants[w] = (clusters[survivor].variants[w] || 0) + c;
+          });
+          clusters[absorbed].students.forEach(s => clusters[survivor].students.add(s));
+          absorbedKeys.add(absorbed);
+
+          if (absorbed === keyA) break;
+        }
+      }
+
+      absorbedKeys.forEach(k => delete clusters[k]);
+      return clusters;
     }
 
     function calculateWordFrequencies() {
@@ -1240,6 +1306,8 @@
           studentMap[raw].forEach(stu => clusters[norm].students.add(stu));
         }
       });
+
+      mergeFuzzyClusters(clusters);
 
       const result = [];
       Object.keys(clusters).forEach(normKey => {
@@ -1623,7 +1691,22 @@
         if (emptyLabel) emptyLabel.style.display = count > 0 ? 'none' : 'block';
       });
 
-      redrawAllDrawings();
+      fitBoardHeightToContent();
+      initDrawingCanvas();
+    }
+
+    // 낱말/그룹이 늘어나 화면 아래로 넘치면 보드 안에서 잘리지 않고,
+    // 보드 자체 높이가 늘어나서 페이지를 스크롤해 볼 수 있도록 한다.
+    function fitBoardHeightToContent() {
+      const canvasEl = document.getElementById('unifiedBoardCanvas');
+      if (!canvasEl) return;
+      let maxBottom = 0;
+      canvasEl.querySelectorAll('.canvas-item-node.absolute').forEach(el => {
+        const top = parseFloat(el.style.top) || 0;
+        const height = el.offsetHeight || 0;
+        maxBottom = Math.max(maxBottom, top + height);
+      });
+      canvasEl.style.minHeight = Math.max(460, maxBottom + 60) + 'px';
     }
 
     function setupDraggableWord(element, wordKey, isInsideGroup) {
@@ -2251,6 +2334,33 @@
       document.getElementById('studentModal').classList.add('hidden');
     }
 
+    function updateWordPreview(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+
+      const raw = input.value;
+      if (!raw.trim()) {
+        preview.innerHTML = '';
+        return;
+      }
+
+      const tokens = raw.split(',').map(s => s.trim()).filter(Boolean);
+      const looksLikeMissingComma = tokens.length === 1 && /\s/.test(tokens[0].trim()) && tokens[0].trim().length > 6;
+
+      const chips = tokens.map(t =>
+        `<span class="inline-block bg-white border border-emerald-300 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-lg">${t}</span>`
+      ).join(' ');
+
+      let html = `<div class="flex flex-wrap gap-1 mt-1.5">${chips}</div>`;
+      if (looksLikeMissingComma) {
+        html += `<div class="mt-1 text-[11px] text-rose-600 font-bold">⚠️ 쉼표(,) 없이 입력하신 것 같아요! 낱말 사이마다 쉼표를 넣어야 각각 따로 등록돼요.</div>`;
+      } else {
+        html += `<div class="mt-1 text-[11px] text-[#9E9080]">👆 이렇게 <b>${tokens.length}개</b> 낱말로 나뉘어 제출됩니다.</div>`;
+      }
+      preview.innerHTML = html;
+    }
+
     function performStudentSubmission(rawNum, words) {
       if (!rawNum) {
         alert("학생 번호(숫자)를 입력해주세요!");
@@ -2296,6 +2406,7 @@
 
       if (performStudentSubmission(rawNum, words)) {
         document.getElementById('modalStudentWords').value = '';
+        document.getElementById('modalStudentWordsPreview').innerHTML = '';
         closeStudentModal();
       }
     }
@@ -2307,6 +2418,7 @@
       if (performStudentSubmission(rawNum, words)) {
         document.getElementById('studentPanelNumber').value = '';
         document.getElementById('studentPanelWords').value = '';
+        document.getElementById('studentPanelWordsPreview').innerHTML = '';
       }
     }
 
@@ -3259,14 +3371,17 @@
         list.innerHTML = `<p class="text-center text-[#A09282] py-6 text-xs">등록된 단어가 없습니다.</p>`;
       } else {
         words.forEach(w => {
-          const row = document.createElement('div');
-          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center justify-between gap-2";
+          const row = document.createElement('label');
+          row.className = "bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#EAE2D5] flex items-center gap-2.5 cursor-pointer hover:bg-[#F5EFE6] transition";
           row.innerHTML = `
-            <div>
-              <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
-              <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
+            <input type="checkbox" class="merge-select-checkbox w-4 h-4 accent-emerald-500 flex-shrink-0" data-normkey="${w.normKey || w.representative}">
+            <div class="flex-1 min-w-0">
+              <div>
+                <span class="text-xs font-black text-[#38302A]">대표어: ${w.representative}</span>
+                <span class="bg-violet-100 text-violet-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-1.5">총 ${w.totalCount}회</span>
+              </div>
+              <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
             </div>
-            <div class="text-[11px] text-[#7A6D5D] font-medium">포함: ${w.synonyms.map(s => s.word).join(', ')}</div>
           `;
           list.appendChild(row);
         });
@@ -3274,6 +3389,36 @@
       modal.classList.remove('hidden');
     }
     function closeMergeManager() { document.getElementById('mergeManagerModal').classList.add('hidden'); }
+
+    function mergeSelectedWords() {
+      const checked = Array.from(document.querySelectorAll('.merge-select-checkbox:checked'));
+      if (checked.length < 2) {
+        showToast("합칠 낱말을 2개 이상 체크해주세요.");
+        return;
+      }
+
+      const words = calculateWordFrequencies();
+      const selectedNormKeys = checked.map(cb => cb.dataset.normkey);
+      const selectedClusters = selectedNormKeys
+        .map(key => words.find(w => (w.normKey || w.representative) === key))
+        .filter(Boolean);
+      if (selectedClusters.length < 2) return;
+
+      selectedClusters.sort((a, b) => b.totalCount - a.totalCount);
+      const target = selectedClusters[0];
+      const others = selectedClusters.slice(1);
+
+      others.forEach(cl => {
+        cl.synonyms.forEach(s => {
+          appState.customMerges[s.word] = target.normKey || target.representative;
+        });
+      });
+
+      autoSaveActiveProject();
+      renderUnifiedBoard();
+      openMergeManager();
+      showToast(`'${target.representative}'(으)로 ${selectedClusters.length}개 낱말을 합쳤습니다.`);
+    }
 
     function openResetModal() { toggleMenu(false); document.getElementById('resetModal').classList.remove('hidden'); }
     function closeResetModal() { document.getElementById('resetModal').classList.add('hidden'); }
