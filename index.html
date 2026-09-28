@@ -341,7 +341,7 @@
 
         <!-- 대형 파스텔 타이틀 배너 -->
         <div id="boardHeaderTitleBanner" class="absolute top-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto max-w-[95%] text-center">
-          <div onclick="openTopicModal()"
+          <div onclick="openPageTitlePrompt()"
                class="cursor-pointer group inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 via-purple-50 to-pink-50 text-[#4A3A5C] px-5 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-md shadow-violet-100/70 hover:shadow-lg border-2 border-violet-200 hover:border-violet-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 max-w-full">
 
             <span class="w-8 h-8 rounded-full bg-white text-violet-400 flex items-center justify-center text-sm shadow-sm group-hover:rotate-12 transition-transform flex-shrink-0">
@@ -1020,10 +1020,20 @@
       const hTopic = document.getElementById('displayTopic');
       const bTopic = document.getElementById('boardCenterTopicText');
       const sTopic = document.getElementById('studentPanelTopicText');
+      // 보드 위 "오늘 배울 핵심 주제" 배너는 수업 전체의 주제(수업 주제)가 아니라
+      // 지금 보고 있는 페이지의 제목을 보여준다. 수업 주제는 헤더의
+      // "수업 주제:" 표시에서만 확인/수정한다.
+      const pageTitle = getActivePage().title || topicStr;
       if (hTopic) hTopic.innerText = topicStr;
-      if (bTopic) bTopic.innerText = topicStr;
-      if (sTopic) sTopic.innerText = topicStr;
+      if (bTopic) bTopic.innerText = pageTitle;
+      if (sTopic) sTopic.innerText = pageTitle;
       fitAllTopicText();
+    }
+
+    function openPageTitlePrompt() {
+      openProjectPrompt('페이지 제목 수정', getActivePage().title || '', (val) => {
+        if (val) renamePage(val);
+      });
     }
 
     let audioCtx = null;
@@ -3389,6 +3399,7 @@
       if (!t) { renderPageSwitcher(); return; }
       getActivePage().title = t;
       renderPageSwitcher();
+      syncTopicToUI(appState.topic);
       autoSaveActiveProject();
     }
 
