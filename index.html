@@ -214,6 +214,9 @@
           <button id="toolBtnArrow" onclick="setBoardTool('arrow')" class="px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5" title="카드 간 자석 화살표 연결">
             <i class="fa-solid fa-arrow-right"></i> <span>화살표</span>
           </button>
+          <button id="toolBtnEraser" onclick="setBoardTool('eraser')" class="px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5" title="드래그한 부분의 판서만 지우기">
+            <i class="fa-solid fa-eraser"></i> <span>부분 지우기</span>
+          </button>
         </div>
 
         <div id="drawingColorPalette" class="flex items-center gap-1.5 pl-1 border-l border-[#EAE2D5]">
@@ -230,7 +233,7 @@
             <i class="fa-solid fa-rotate-left"></i> 되돌리기
           </button>
           <button onclick="clearAllDrawings()" class="px-2.5 py-1 bg-[#F5EFE6] hover:bg-rose-100 hover:text-rose-700 text-[#7A6D5D] rounded-xl font-bold transition" title="판서 전체 지우기">
-            <i class="fa-solid fa-eraser"></i> 지우기
+            <i class="fa-solid fa-trash-can"></i> 전체 지우기
           </button>
         </div>
 
@@ -275,7 +278,8 @@
           <button id="pageNextBtn" onclick="goToNextPage()" class="w-8 h-8 rounded-xl bg-[#F5EFE6] hover:bg-[#ECE3D5] disabled:opacity-30 disabled:cursor-not-allowed text-[#554A3E] flex items-center justify-center transition flex-shrink-0">
             <i class="fa-solid fa-chevron-right"></i>
           </button>
-          <input type="text" id="pageTitleInput" onchange="renamePage(this.value)" class="teacher-only ml-1.5 text-xs font-bold text-[#38302A] bg-transparent border-b border-dashed border-transparent hover:border-[#DFD5C5] focus:border-violet-400 outline-none px-1 py-0.5 min-w-0 w-28 sm:w-44" placeholder="페이지 이름">
+          <span class="teacher-only text-[11px] text-[#A09282] font-bold ml-1.5 flex-shrink-0">페이지 제목:</span>
+          <input type="text" id="pageTitleInput" onchange="renamePage(this.value)" class="teacher-only text-xs font-bold text-[#38302A] bg-transparent border-b border-dashed border-[#DFD5C5] hover:border-violet-300 focus:border-violet-400 outline-none px-1 py-0.5 min-w-0 w-28 sm:w-44" placeholder="예: 1교시 도입" title="수업 주제와 별개로, 이 페이지만의 제목을 붙일 수 있어요">
           <span id="pageTitleDisplay" class="student-only hidden ml-1.5 text-xs font-bold text-[#554A3E] truncate"></span>
         </div>
         <div class="flex items-center gap-1.5 teacher-only flex-shrink-0">
@@ -360,7 +364,7 @@
         </div>
 
         <canvas id="drawingCanvas" class="absolute inset-0 z-20 pointer-events-none w-full h-full"></canvas>
-        <div id="drawingEventTrap" class="hidden absolute inset-0 z-20 cursor-crosshair"></div>
+        <div id="drawingEventTrap" class="hidden absolute inset-0 z-20 cursor-crosshair touch-none"></div>
         <div id="arrowActionsContainer" class="absolute inset-0 z-25 pointer-events-none"></div>
 
         <!-- WAITING/HIDDEN OVERLAY SCREEN -->
@@ -1200,11 +1204,49 @@
       }
     }
 
+    // 자음/모음이 완성된 글자로 조합되지 못한 채 따로 입력된 경우
+    // (예: "생ㅁㅜㄹ" → "생물") 온전한 한글 음절로 다시 합쳐준다.
+    // "ㅋㅋㅋ", "ㅇㅇ"처럼 자음/모음만으로 이루어진 표현은 뒤에 모음이
+    // 오지 않으므로 그대로 유지된다.
+    const HANGUL_CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const HANGUL_JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+    const HANGUL_JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+    function composeHangulJamo(str) {
+      const chars = Array.from(str);
+      let result = '';
+      let i = 0;
+      while (i < chars.length) {
+        const choIdx = HANGUL_CHO.indexOf(chars[i]);
+        if (choIdx !== -1 && i + 1 < chars.length) {
+          const jungIdx = HANGUL_JUNG.indexOf(chars[i + 1]);
+          if (jungIdx !== -1) {
+            let jongIdx = 0;
+            let consumed = 2;
+            if (i + 2 < chars.length) {
+              const jongCandidate = HANGUL_JONG.indexOf(chars[i + 2]);
+              const followedByVowel = (i + 3 < chars.length) && HANGUL_JUNG.indexOf(chars[i + 3]) !== -1;
+              if (jongCandidate > 0 && !followedByVowel) {
+                jongIdx = jongCandidate;
+                consumed = 3;
+              }
+            }
+            result += String.fromCharCode(0xAC00 + (choIdx * 21 + jungIdx) * 28 + jongIdx);
+            i += consumed;
+            continue;
+          }
+        }
+        result += chars[i];
+        i += 1;
+      }
+      return result;
+    }
+
     function normalizeKoreanWord(rawWord) {
       if (!rawWord) return "";
       // 공백 유무로 "생물요소"와 "생물 요소"가 다른 낱말로 갈리지 않도록,
       // 비교용 정규화 단계에서는 내부 공백을 전부 제거한다.
-      let w = rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, '');
+      let w = composeHangulJamo(rawWord.trim().replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣]/g, '').replace(/\s+/g, ''));
 
       const prefixes = ["다양한", "여러가지", "많은", "우리나라", "작은", "큰", "예쁜", "무서운", "귀여운"];
       for (const p of prefixes) {
@@ -1253,6 +1295,11 @@
     // 대신 길이가 같고 글자 하나만 다른(=오타로 보이는) 낱말만 자동으로 묶어준다.
     // 글자가 추가/삭제된 경우(예: "생물요소"↔"비생물요소")는 접두사 하나 차이로
     // 뜻이 완전히 달라지는 경우가 많아 자동 병합 대상에서 제외한다.
+    // (자모가 낱개로 입력된 "생ㅁㅜㄹ" 같은 경우는 여기 도달하기 전
+    // normalizeKoreanWord의 composeHangulJamo 단계에서 이미 "생물"과
+    // 똑같은 글자로 합쳐지므로 별도 처리가 필요 없다.)
+    // 한 글자짜리 낱말은 하나만 달라도 완전히 다른 뜻이 되는 경우가 매우 많아
+    // (예: "물"/"불") 자동 병합 대상에서 제외한다.
     // 그 밖의 경우는 "유사 낱말 병합 관리"에서 교사가 수동으로 합치거나 분리할 수 있다.
     function mergeFuzzyClusters(clusters) {
       const keys = Object.keys(clusters);
@@ -1261,11 +1308,11 @@
 
       for (let i = 0; i < keys.length; i++) {
         const keyA = keys[i];
-        if (absorbedKeys.has(keyA) || keyA.length < 3 || excluded.has(keyA)) continue;
+        if (absorbedKeys.has(keyA) || keyA.length < 2 || excluded.has(keyA)) continue;
 
         for (let j = i + 1; j < keys.length; j++) {
           const keyB = keys[j];
-          if (absorbedKeys.has(keyB) || keyB.length < 3 || excluded.has(keyB)) continue;
+          if (absorbedKeys.has(keyB) || keyB.length < 2 || excluded.has(keyB)) continue;
           if (keyA.length !== keyB.length) continue;
           if (levenshteinDistance(keyA, keyB) !== 1) continue;
 
@@ -1954,9 +2001,10 @@
       const btnPen = document.getElementById('toolBtnPen');
       const btnHighlighter = document.getElementById('toolBtnHighlighter');
       const btnArrow = document.getElementById('toolBtnArrow');
+      const btnEraser = document.getElementById('toolBtnEraser');
       const trap = document.getElementById('drawingEventTrap');
 
-      [btnSelect, btnPen, btnHighlighter, btnArrow].forEach(b => {
+      [btnSelect, btnPen, btnHighlighter, btnArrow, btnEraser].forEach(b => {
         if (b) b.className = "px-3 py-1 rounded-xl font-bold transition text-[#7A6D5D] hover:text-violet-600 flex items-center gap-1.5";
       });
 
@@ -1968,7 +2016,9 @@
         if (tool === 'pen' && btnPen) btnPen.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
         if (tool === 'highlighter' && btnHighlighter) btnHighlighter.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
         if (tool === 'arrow' && btnArrow) btnArrow.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
+        if (tool === 'eraser' && btnEraser) btnEraser.className = "px-3 py-1 rounded-xl font-black transition bg-white text-violet-700 shadow-2xs flex items-center gap-1.5";
       }
+      trap.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
 
       playPopSound(500);
     }
@@ -2007,10 +2057,58 @@
 
     const trap = document.getElementById('drawingEventTrap');
 
+    // 전자칠판 등 터치스크린에서는 브라우저가 손가락 드래그를 화면 스크롤/줌
+    // 제스처로 먼저 가로채면 pointermove가 끊기거나 좌표가 튀어서 필기가
+    // 뚝뚝 끊기듯 인식된다. 포인터를 캡처해 궤적 밖으로 나가도 이벤트를
+    // 계속 받고, 동시에 여러 손가락(팜 터치 등)이 닿아도 처음 잡은
+    // 포인터 하나만 추적하도록 막는다.
+    let activeDrawPointerId = null;
+    let erasedAnyThisStroke = false;
+    const ERASER_RADIUS = 16;
+
+    function distanceToSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const lenSq = dx * dx + dy * dy;
+      let t = lenSq === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / lenSq;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+    }
+
+    function isNearDrawing(item, x, y, radius) {
+      if (item.type === 'path') {
+        if (item.points.length < 2) {
+          const p = item.points[0];
+          return !!p && Math.hypot(x - p.x, y - p.y) <= radius;
+        }
+        for (let i = 1; i < item.points.length; i++) {
+          const a = item.points[i - 1], b = item.points[i];
+          if (distanceToSegment(x, y, a.x, a.y, b.x, b.y) <= radius) return true;
+        }
+        return false;
+      } else if (item.type === 'arrow') {
+        const { startPt, endPt } = getArrowEndpoints(item);
+        return distanceToSegment(x, y, startPt.x, startPt.y, endPt.x, endPt.y) <= radius;
+      }
+      return false;
+    }
+
+    function eraseAtPoint(x, y) {
+      const before = appState.drawings.length;
+      appState.drawings = appState.drawings.filter(item => !isNearDrawing(item, x, y, ERASER_RADIUS + (item.size || 0) / 2));
+      const removed = appState.drawings.length !== before;
+      if (removed) erasedAnyThisStroke = true;
+      return removed;
+    }
+
     if (trap) {
       trap.addEventListener('pointerdown', (e) => {
-        if (currentTool === 'select') return;
+        if (currentTool === 'select' || isDrawing) return;
         isDrawing = true;
+        activeDrawPointerId = e.pointerId;
+        erasedAnyThisStroke = false;
+        try { trap.setPointerCapture(e.pointerId); } catch (err) {}
+        e.preventDefault();
+
         const rect = trap.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -2037,15 +2135,24 @@
             toNodeId: null
           };
           if (fromNodeId) setNodeHighlight(fromNodeId, true);
+        } else if (currentTool === 'eraser') {
+          if (eraseAtPoint(x, y)) redrawAllDrawings();
         }
       });
 
       trap.addEventListener('pointermove', (e) => {
-        if (!isDrawing || !activeStroke) return;
+        if (!isDrawing || e.pointerId !== activeDrawPointerId) return;
+        e.preventDefault();
         const rect = trap.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
+        if (currentTool === 'eraser') {
+          if (eraseAtPoint(x, y)) redrawAllDrawings();
+          return;
+        }
+
+        if (!activeStroke) return;
         if (activeStroke.type === 'path') {
           activeStroke.points.push({ x, y });
         } else if (activeStroke.type === 'arrow') {
@@ -2066,32 +2173,44 @@
       });
 
       const endDrawing = (e) => {
-        if (isDrawing && activeStroke) {
-          if (activeStroke.type === 'path' && activeStroke.points.length > 1) {
-            appState.drawings.push(activeStroke);
-          } else if (activeStroke.type === 'arrow') {
-            const dist = Math.hypot(activeStroke.to.x - activeStroke.from.x, activeStroke.to.y - activeStroke.from.y);
-            if (dist > 15) {
-              if (e && e.clientX) {
-                activeStroke.toNodeId = findNodeAtClientPoint(e.clientX, e.clientY);
-              }
-              if (activeStroke.fromNodeId && activeStroke.fromNodeId === activeStroke.toNodeId) {
-                activeStroke.toNodeId = null;
-              }
-              appState.drawings.push(activeStroke);
-              playPopSound(680);
+        if (isDrawing && e.pointerId === activeDrawPointerId) {
+          try { trap.releasePointerCapture(e.pointerId); } catch (err) {}
+
+          if (currentTool === 'eraser') {
+            if (erasedAnyThisStroke) {
+              autoSaveActiveProject();
+              playPopSound(430);
             }
+          } else if (activeStroke) {
+            if (activeStroke.type === 'path' && activeStroke.points.length > 1) {
+              appState.drawings.push(activeStroke);
+            } else if (activeStroke.type === 'arrow') {
+              const dist = Math.hypot(activeStroke.to.x - activeStroke.from.x, activeStroke.to.y - activeStroke.from.y);
+              if (dist > 15) {
+                if (e && e.clientX) {
+                  activeStroke.toNodeId = findNodeAtClientPoint(e.clientX, e.clientY);
+                }
+                if (activeStroke.fromNodeId && activeStroke.fromNodeId === activeStroke.toNodeId) {
+                  activeStroke.toNodeId = null;
+                }
+                appState.drawings.push(activeStroke);
+                playPopSound(680);
+              }
+            }
+
+            if (activeStroke.fromNodeId) setNodeHighlight(activeStroke.fromNodeId, false);
+            if (currentHoverNodeId) setNodeHighlight(currentHoverNodeId, false);
+            currentHoverNodeId = null;
+
+            autoSaveActiveProject();
           }
 
-          if (activeStroke.fromNodeId) setNodeHighlight(activeStroke.fromNodeId, false);
-          if (currentHoverNodeId) setNodeHighlight(currentHoverNodeId, false);
-          currentHoverNodeId = null;
-
-          autoSaveActiveProject();
+          isDrawing = false;
+          activeDrawPointerId = null;
+          erasedAnyThisStroke = false;
+          activeStroke = null;
+          redrawAllDrawings();
         }
-        isDrawing = false;
-        activeStroke = null;
-        redrawAllDrawings();
       };
 
       trap.addEventListener('pointerup', endDrawing);
